@@ -1,22 +1,26 @@
-<!--ts-->
-   * [Kaizen Workflow Explanation](#kaizen-workflow-explanation)
-   * [Quant workflows](#quant-workflows)
-      * [DataPull](#datapull)
-      * [DataFlow](#dataflow)
-      * [Learn how to build a DAG](#learn-how-to-build-a-dag)
-   * [Quant dev workflows](#quant-dev-workflows)
-      * [DataPull](#datapull-1)
-      * [DataFlow](#dataflow-1)
-      * [Deploying](#deploying)
-      * [Monitoring](#monitoring)
-      * [Trading execution](#trading-execution)
-      * [MLOps](#mlops)
-   * [Devops workflows](#devops-workflows)
-   * [Refs](#refs)
 
 
+<!-- toc -->
 
-<!--te-->
+- [KaizenFlow Workflow Explanation](#kaizenflow-workflow-explanation)
+- [Set-up](#set-up)
+- [Quant workflows](#quant-workflows)
+  * [`DataPull`](#datapull)
+  * [`DataFlow`](#dataflow)
+    + [Meta](#meta)
+    + [DAG](#dag)
+    + [System](#system)
+- [Quant dev workflows](#quant-dev-workflows)
+  * [DataPull](#datapull)
+  * [DataFlow](#dataflow)
+  * [Deploying](#deploying)
+  * [Monitoring](#monitoring)
+  * [Trading execution](#trading-execution)
+  * [MLOps](#mlops)
+- [Devops workflows](#devops-workflows)
+- [Refs](#refs)
+
+<!-- tocstop -->
 
 # KaizenFlow Workflow Explanation
 
@@ -43,20 +47,21 @@ The life of a Quant is spent between:
 - Assessing models
 
 These activities are mapped in `KaizenFlow` as follows:
+
 - Exploring the raw data
-  - This is performed by reading data using `DataPull` in a notebook
-    and performing exploratory analysis
+  - This is performed by reading data using `DataPull` in a notebook and
+    performing exploratory analysis
 - Computing features
-  - This is performed by reading data using `DataPull` in a notebook and 
-    creating some `DataFlow` nodes 
+  - This is performed by reading data using `DataPull` in a notebook and
+    creating some `DataFlow` nodes
 - Building models to predict output given features
   - This is performed by connecting `DataFlow` nodes into a `Dag`
 - Assessing models
-  - This is performed by running data through a `Dag` in a notebook or in a 
+  - This is performed by running data through a `Dag` in a notebook or in a
     Python script and post-processing the results in an analysis notebook
 - Comparing models
-  - The parameters of a model are exposed through a `Config` and then sweep 
-    over `Config` lists
+  - The parameters of a model are exposed through a `Config` and then sweep over
+    `Config` lists
 
 ## `DataPull`
 
@@ -139,10 +144,13 @@ These activities are mapped in `KaizenFlow` as follows:
 
 - Best practices for Quant research
   - [/docs/dataflow/ck.research_methodology.explanation.md](/docs/dataflow/ck.research_methodology.explanation.md)
+  - \# TODO(Grisha): `ck.*` -> `all.*`?
 
 - A description of all the available generic notebooks with a short description
   - [/docs/dataflow/ck.master_notebooks.reference.md](/docs/dataflow/ck.master_notebooks.reference.md)
-   
+  - \# TODO(Grisha): does this belong to `DataFlow`?
+  - \# TODO(Grisha): `ck.master_notebooks...` -> `all.master_notebooks`?
+
 ### DAG
 
 - General concepts of `DataFlow`
@@ -158,15 +166,18 @@ These activities are mapped in `KaizenFlow` as follows:
 
 - Learn how to build a `DAG`
   - Build a `DAG` with two nodes
-    - [/docs/dataflow/all.build_first_dag.tutorial.ipynb](/docs/dataflow/ck.build_first_dag.tutorial.ipynb)
+    - [/docs/dataflow/all.build_first_dag.tutorial.ipynb](/docs/dataflow/all.build_first_dag.tutorial.ipynb)
   - Build a more complex `DAG` implementing a simple risk model
     - [/docs/dataflow/all.build_simple_risk_model_dag.tutorial.ipynb](/docs/dataflow/all.build_simple_risk_model_dag.tutorial.ipynb)
 
-- Analyze features computed with `DataFlow`
-  - Read features from a Parquet file and perform some analysis
-    - [/dataflow/model/notebooks/Master_feature_analyzer.ipynb](/dataflow/model/notebooks/Master_feature_analyzer.ipynb)
-  - TODO(gp): Grisha do we have a notebook that reads data from 
-    ImClient/MarketData and performs some analysis?
+- Learn how to run a `DAG`
+  - Overview, DagBuilder, Dag, DagRunner
+    - [/docs/dataflow/ck.run_batch_computation_dag.explanation.md](/docs/dataflow/ck.run_batch_computation_dag.explanation.md)
+  - Configure a simple risk model, Build a DAG, Generate data and connect data
+    source to the DAG, Run the DAG
+    - [/docs/dataflow/ck.run_batch_computation_dag.tutorial.ipynb](/docs/dataflow/ck.run_batch_computation_dag.tutorial.ipynb)
+  - Build a DAG from a Mock2 DagBuilder and run it
+    - [/docs/kaizenflow/all.run_Mock2_pipeline_in_notebook.how_to_guide.ipynb](/docs/kaizenflow/all.run_Mock2_pipeline_in_notebook.how_to_guide.ipynb)
 
 - General intro about model simulation
   - Property of tilability, Batch vs streaming
@@ -185,35 +196,37 @@ These activities are mapped in `KaizenFlow` as follows:
     backtesting, How to run replayed time simulation, Running experiments
     - [/docs/dataflow/ck.run_backtest.how_to_guide.md](/docs/dataflow/ck.run_backtest.how_to_guide.md)
     - TODO(gp): Review
-     
+
 - Run a simulation sweep using a list of `Config`
-  - TODO(gp): @grisha do we have anything here? It's like the stuff that Dan 
+  - \# TODO(gp): @grisha do we have anything here? It's like the stuff that Dan
     does
+  - \# TODO(Grisha): @Dan, add a link to the doc here once it is ready
 
 - Post-process the results of a simulation
   - Build the Config dict, Load tile results, Compute portfolio bar metrics,
     Compute aggregate portfolio stats
   - [/dataflow/model/notebooks/Master_research_backtest_analyzer.ipynb](/dataflow/model/notebooks/Master_research_backtest_analyzer.ipynb)
+  - \# TODO(Grisha): is showcasing an example with fake data enough? We could
+    use Mock2 output
 
 - Analyze a `DataFlow` model in details
   - Build Config, Initialize ModelEvaluator and ModelPlotter
   - [/dataflow/model/notebooks/Master_model_analyzer.ipynb](/dataflow/model/notebooks/Master_model_analyzer.ipynb)
-  - TODO(gp): @grisha what is the difference with the other?
-   
-- Create a `Dag` to perform batch process
-  - Overview, DagBuilder, Dag, DagRunner
-    - [/docs/dataflow/ck.run_batch_computation_dag.explanation.md](/docs/dataflow/ck.run_batch_computation_dag.explanation.md)
-  - Configure model, Build a DAG, Generate data and connect data source to 
-    the DAG, Run the DAG
-    - [/docs/dataflow/ck.run_batch_computation_dag.tutorial.ipynb](/docs/dataflow/ck.run_batch_computation_dag.tutorial.ipynb)
+  - \# TODO(gp): @grisha what is the difference with the other?
+  - \# TODO(Grisha): ask Paul about the notebook
 
-- ?
-  - docs/kaizenflow/all.run_Mock2_pipeline_in_notebook.how_to_guide.ipynb
+- Analyze features computed with `DataFlow`
+  - Read features from a Parquet file and perform some analysis
+    - [/dataflow/model/notebooks/Master_feature_analyzer.ipynb](/dataflow/model/notebooks/Master_feature_analyzer.ipynb)
+  - \# TODO(gp): Grisha do we have a notebook that reads data from
+    ImClient/MarketData and performs some analysis?
+  - \# TODO(Grisha): create a tutorial notebook for analyzing features using
+    some real (or close to real) data
 
 - Mix multiple `DataFlow` models
   - [/dataflow/model/notebooks/Master_model_mixer.ipynb](/dataflow/model/notebooks/Master_model_mixer.ipynb)
   - TODO(gp): add more comments
-  
+
 - Exporting PnL and trades
   - [/dataflow/model/notebooks/Master_save_pnl_and_trades.ipynb](/dataflow/model/notebooks/Master_save_pnl_and_trades.ipynb)
   - [/docs/dataflow/ck.export_alpha_data.explanation.md](/docs/dataflow/ck.export_alpha_data.explanation.md)
@@ -222,24 +235,20 @@ These activities are mapped in `KaizenFlow` as follows:
   - [/docs/dataflow/ck.load_alpha_and_trades.tutorial.py](/docs/dataflow/ck.load_alpha_and_trades.tutorial.py)
   - TODO(gp): add more comments
 
-
 ### System
+
+- Learn how to build `System`
+  - \# TODO(gp): @grisha what do we have for this?
+  - \# TODO(Grisha): add a tutorial notebook that builds a System and explain
+    the flow step-by-step
 
 - Configure a full system using a `Config`
   - Fill the SystemConfig, Build all the components and run the System
   - [/docs/dataflow/system/all.use_system_config.tutorial.ipynb](/docs/dataflow/system/all.use_system_config.tutorial.ipynb)
 
-- Learn how to build `System`
-  - TODO(gp): @grisha what do we have for this?
-
 - Create an ETL batch process using a `System`
   - [/dataflow_amp/system/risk_model_estimation/run_rme_historical_simulation.py](/dataflow_amp/system/risk_model_estimation/run_rme_historical_simulation.py)
-  - TODO(Grisha): add an explanation doc and consider converting into Jupyter
-    notebook.
-   
-- Create an ETL real-time using a `System`
-  - [dataflow_amp/system/realtime_etl_data_observer/scripts/DataObserver_template.run_data_observer_simulation.py](/dataflow_amp/system/realtime_etl_data_observer/scripts/DataObserver_template.run_data_observer_simulation.py)
-  - TODO(Grisha): add an explanation doc and consider converting into Jupyter
+  - TODO(Grisha): add an explanation doc and consider converting into a Jupyter
     notebook.
 
 - Create an ETL real-time process
@@ -247,18 +256,22 @@ These activities are mapped in `KaizenFlow` as follows:
     - [/docs/dataflow/system/ck.build_real_time_dag.explanation.md](/docs/dataflow/system/ck.build_real_time_dag.explanation.md)
   - Build a DAG that runs in real time
     - [/dataflow_amp/system/realtime_etl_data_observer/scripts/run_realtime_etl_data_observer.py](/dataflow_amp/system/realtime_etl_data_observer/scripts/run_realtime_etl_data_observer.py)
-    - TODO(Grisha): consider converting into Jupyter notebook.
+    - \# TODO(Grisha): consider converting into a Jupyter notebook.
+  - Build a `System` that runs in real time
+    - [dataflow_amp/system/realtime_etl_data_observer/scripts/DataObserver_template.run_data_observer_simulation.py](/dataflow_amp/system/realtime_etl_data_observer/scripts/DataObserver_template.run_data_observer_simulation.py)
+    - \# TODO(Grisha): consider converting into a Jupyter notebook.
 
-- Simulate a Mock2 `System`
-  - Description of the forecast system, Description of the System, Run a 
-  backtest, Explanation of the backtesting script, Analyze the results
+- Batch simulation a Mock2 `System`
+  - Description of the forecast system, Description of the System, Run a
+    backtest, Explanation of the backtesting script, Analyze the results
   - [/docs/kaizenflow/all.run_Mock2_in_batch_mode.how_to_guide.md](/docs/kaizenflow/all.run_Mock2_in_batch_mode.how_to_guide.md)
-  - Build the config, Load tiled results, Compute portfolio bar metrics, Compute aggregate portfolio stats
+  - Build the config, Load tiled results, Compute portfolio bar metrics, Compute
+    aggregate portfolio stats
   - [/docs/kaizenflow/all.analyze_Mock2_pipeline_simulation.how_to_guide.ipynb](/docs/kaizenflow/all.analyze_Mock2_pipeline_simulation.how_to_guide.ipynb)
 
 - Run an end-to-end timed simulation of `Mock2` `System`
-  - docs/kaizenflow/all.run_end_to_end_Mock2_system.tutorial.md
-  - ./dataflow_amp/system/mock2/scripts/run_end_to_end_Mock2_system.py
+  - [/docs/kaizenflow/all.run_end_to_end_Mock2_system.tutorial.md](/docs/kaizenflow/all.run_end_to_end_Mock2_system.tutorial.md)
+  - [/dataflow_amp/system/mock2/scripts/run_end_to_end_Mock2_system.py](/dataflow_amp/system/mock2/scripts/run_end_to_end_Mock2_system.py)
 
 - TODO(gp): reorg the following files
   ```
@@ -296,6 +309,10 @@ These activities are mapped in `KaizenFlow` as follows:
     - TODO(Juraj): See https://github.com/cryptokaizen/cmamp/issues/6444
 
 - Add QA for a `DataPull` source
+
+- Compare OHLCV bars
+  - [/im_v2/ccxt/data/client/notebooks/CmTask6537_One_off_comparison_of_Parquet_and_DB_OHLCV_data.ipynb](/im_v2/ccxt/data/client/notebooks/CmTask6537_One_off_comparison_of_Parquet_and_DB_OHLCV_data.ipynb)
+  - \# TODO(Grisha): review and generalize
 
 - How to import `Bloomberg` historical data
   - [/docs/datapull/ck.process_historical_data_without_dataflow.tutorial.ipynb](/docs/datapull/ck.process_historical_data_without_dataflow.tutorial.ipynb)

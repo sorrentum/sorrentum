@@ -153,6 +153,8 @@
   > i git_branch_diff_with -t hash -h 813c7e763 -f ...
   > git difftool 813c7e763 ...
   ```
+  
+### `integrate_diff_dirs` flow
 
 - Check which files are different between the dirs:
 
@@ -256,3 +258,14 @@
 - Check `orange` on dev1
 
 - Check `dev_tools` on dev1
+
+## Integrating docs
+
+- In Sorrentum we don't keep anything specific to `amp`
+
+  ```
+  > cd sorrentum1
+  > find docs -name "ck*" | xargs git rm -fr
+  ```
+  
+- TODO(gp): create a script for this?

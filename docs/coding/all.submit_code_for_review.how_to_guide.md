@@ -66,6 +66,11 @@ some helpful tips and resources to guide you through your first review.
   - No need to obsessively fix all of them - just crucial and obvious ones
   - Post unresolved lints in your PR so Reviewer could see them and know which
     should be fixed and which are not
+- If we see that people didn't run the linter, we should do a quick PR just
+  running the linter. This type of PR can be merged even without review.
+- If the linter introduces extensive changes in a PR, causing difficulty in
+  reading the diff, a new pull request should be created exclusively for the
+  linter changes, based on the branch of the original PR.
 
 ## Compare your code to example code
 
@@ -147,15 +152,12 @@ some helpful tips and resources to guide you through your first review.
   consuming a lot of basically useless memory
 - The exceptions are plots and non-code information
 - Examples:
-
   - _Bad_
 
     <img width="677" alt="scree" src="https://github.com/sorrentum/sorrentum/assets/31514660/699cd1c5-53d2-403b-a0d7-96c66d4360ce">
-
   - _Good_
 
     Input:
-
     ```
     type_ = "supply"
     supply_curve1 = ddcrsede.get_supply_demand_discrete_curve(
@@ -165,7 +167,6 @@ some helpful tips and resources to guide you through your first review.
     ```
 
     Error:
-
     ```
     ---------------------------------------------------------------------------
     NameError                                 Traceback (most recent call last)
@@ -203,7 +204,7 @@ some helpful tips and resources to guide you through your first review.
   - What the problem is
   - Why the outcome is different from what you expected
   - E.g. on how to report any issues
-    - https://github.com/sorrentum/sorrentum/issues/370#issue-1782574355
+    - Https://github.com/sorrentum/sorrentum/issues/370#issue-1782574355
 
 ## Look at examples of the first reviews
 
@@ -211,8 +212,8 @@ some helpful tips and resources to guide you through your first review.
   idea of what common issues are and how to address them.
 - Here are some links to a few "painful" first reviews:
   - Adding unit tests:
-    - https://github.com/sorrentum/sorrentum/pull/166
-    - https://github.com/sorrentum/sorrentum/pull/186
+    - Https://github.com/sorrentum/sorrentum/pull/166
+    - Https://github.com/sorrentum/sorrentum/pull/186
   - Writing scripts:
-    - https://github.com/sorrentum/sorrentum/pull/267
-    - https://github.com/sorrentum/sorrentum/pull/276
+    - Https://github.com/sorrentum/sorrentum/pull/267
+    - Https://github.com/sorrentum/sorrentum/pull/276

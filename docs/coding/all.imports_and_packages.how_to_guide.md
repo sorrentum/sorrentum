@@ -57,7 +57,7 @@
       - Good
 
         ```python
-        import im_v2.common.data.client.base_im_clients as imvcdcbimcl
+        import im_v2.common.data.client.abstract_im_clients as imvcdcaimcl
         ```
 
       - Bad

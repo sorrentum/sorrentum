@@ -1,5 +1,5 @@
 <!--ts-->
-      * [Time semantics](#time-semantics)
+   * [Time semantics](#time-semantics)
    * [How clock is handled](#how-clock-is-handled)
       * [Asynchronous mode](#asynchronous-mode)
       * [Synchronous mode](#synchronous-mode)
@@ -17,6 +17,7 @@
 
 
 <!--te-->
+
 # Time semantics
 
 **Time semantics**. Any DataFlow component can be executed in real-time or
