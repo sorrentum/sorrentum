@@ -8,6 +8,48 @@ import helpers.hpandas as hpandas
 import helpers.hunit_test as hunitest
 import im_v2.binance.data.extract.extractor as ivbdexex
 
+class TextBinanceWebsocket(hunitest.TestCase):
+
+    def _get_mock_bids(self):
+        mock_data = """{
+            "s" : "BTCUSDT",
+            "T" : 123456789,
+            "b": [100, 101],
+            "a" : [110, 111],        
+        }"""
+        return mock_data
+    
+    def test_download_websocket_bid_ask(self):
+        ivbdexex.hio = umock.MagicMock()
+        contract_type = "futures"
+        data_type = "trades"
+        try:
+            binance_extractor = ivbdexex.BinanceExtractor(
+                contract_type, ivbdexex.BinanceNativeTimePeriod.DAILY, data_type
+            )
+            binance_extractor._websocket_data_buffer = {}
+            
+            binance_extractor._handle_orderbook_message = umock.MagicMock(
+                return_value=self._get_mock_bids()
+            )
+
+            currency_pair = "BTCUSDT"
+            actual_df = binance_extractor._download_websocket_bid_ask(currency_pair)
+            import pdb; pdb.set_trace() 
+        except Exception as e:
+            raise e
+        finally:
+            binance_extractor.close()
+        import pdb; pdb.set_trace()
+        
+
+    def test_download_websocket_ohlcv(self):
+        mock_data = {'open': 100, 'high': 120, 'low': 90, 'close': 110, 'volume': 1000}
+        pass
+
+    def test_download_websocket_trades(self):
+        mock_data = [{'timestamp': 123456789, 'price': 100, 'quantity': 10, 'side': 'buy'}]
+        pass
 
 class TestBinanceExtractor(hunitest.TestCase):
     def _get_mock_trades(self) -> pd.DataFrame:
@@ -35,7 +77,7 @@ class TestBinanceExtractor(hunitest.TestCase):
                 "qty": [1, 2, 3, 4],
                 "is_buyer_maker": [True, False, True, False],
                 "quote_qty": [100, 400, 900, 300],
-                "id": [1, 2, 3, 4],
+                "id": [1, 2, 3, 4], 
             }
         )
 
