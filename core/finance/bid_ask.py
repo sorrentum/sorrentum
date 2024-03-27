@@ -158,6 +158,7 @@ def transform_bid_ask_long_data_to_wide(
     bid_prefix: str = "bid_",
     ask_prefix: str = "ask_",
     final_col_format: str = "{0[0]}_l{0[1]}",
+    value_col_prefixes: List[str] = None,
 ) -> pd.DataFrame:
     """
     Transform data with multiple bid-ask levels from a long form to a wide
@@ -184,17 +185,20 @@ def transform_bid_ask_long_data_to_wide(
     :param final_col_format: format for the final column names, pandas' df.pivot by
         default uses column naming matrix like so: columns x values.
         E.g. {bid_size, bid_price ...} x {1, 2, 3 ...} = {bid_size1, bid_size2 ...}).
+    :param value_col_prefixes: prefixes for value-related columns
     :return: dataframe with bid-ask data in wide format
     """
     _LOG.debug(hprint.to_str("timestamp_col bid_prefix ask_prefix"))
+    if value_col_prefixes is None:
+        value_col_prefixes = ["log", "half"]
     hdbg.dassert_in(timestamp_col, df.reset_index().columns)
     df = df.reset_index()
+    prefixes = [bid_prefix, ask_prefix] + list(value_col_prefixes)
     # Specify bid-ask and non-bid-ask columns.
     bid_ask_cols = [
         col
         for col in df.columns
-        # TODO(Juraj): ad-hoc hack, address properly in #CmTask7387.
-        if col.startswith((bid_prefix, ask_prefix, "log", "half"))
+        if any(col.startswith(prefix) for prefix in prefixes)
     ]
     # Index of pivoted data shouldn't also contain `level` (used as columns) and `id` (creates duplicates).
     non_bid_ask_cols = [
