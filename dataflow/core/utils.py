@@ -14,11 +14,13 @@ import logging
 import re
 from typing import Callable, List, Tuple, Union
 
+import numpy as np
 import pandas as pd
 
 import dataflow.core.dag_builder as dtfcodabui
 import helpers.hdbg as hdbg
 import helpers.hintrospection as hintros
+import helpers.hpandas as hpandas
 import helpers.hprint as hprint
 
 _LOG = logging.getLogger(__name__)
@@ -179,6 +181,71 @@ def validate_df_indices(df: pd.DataFrame) -> None:
     hdbg.dassert_isinstance(df, pd.DataFrame)
     hdbg.dassert_no_duplicates(df.columns.tolist())
     # TODO(Paul): assert if the datetime index has dups.
+
+
+def convert_to_multiindex(df: pd.DataFrame, asset_id_col: str) -> pd.DataFrame:
+    """
+    Transform a df like: 
+    
+    ```
+
+    :                            id close  volume
+    end_time
+    2022-01-04 09:01:00-05:00  13684    NaN       0
+    2022-01-04 09:01:00-05:00  17085    NaN       0
+    2022-01-04 09:02:00-05:00  13684    NaN       0
+    2022-01-04 09:02:00-05:00  17085    NaN       0
+    2022-01-04 09:03:00-05:00  13684    NaN       0
+    ```
+
+    Return a df like:
+    ```
+                                    close       volume
+                              13684 17085  13684 17085
+    end_time
+    2022-01-04 09:01:00-05:00   NaN   NaN      0     0
+    2022-01-04 09:02:00-05:00   NaN   NaN      0     0
+    2022-01-04 09:03:00-05:00   NaN   NaN      0     0
+    2022-01-04 09:04:00-05:00   NaN   NaN      0     0
+    ```
+
+    Note that the `asset_id` column is removed.
+    """
+    hdbg.dassert_isinstance(df, pd.DataFrame)
+    hdbg.dassert_lte(1, df.shape[0])
+    # Copied from `_load_multiple_instrument_data()`.
+    if _LOG.isEnabledFor(logging.DEBUG):
+        _LOG.debug(
+            "Before multiindex conversion:\n%s",
+            hpandas.df_to_str(df.head()),
+        )
+    # Remove duplicates if any.
+    df = hpandas.drop_duplicated(df, subset=[asset_id_col])
+    #
+    dfs = {}
+    # TODO(Paul): Pass the column name through the constructor, so we can make it
+    #  programmable.
+    hdbg.dassert_in(asset_id_col, df.columns)
+    hpandas.dassert_series_type_is(df[asset_id_col], np.int64)
+    for asset_id, df in df.groupby(asset_id_col):
+        hpandas.dassert_strictly_increasing_index(df)
+        #
+        hdbg.dassert_not_in(asset_id, dfs.keys())
+        dfs[asset_id] = df
+    # Reorganize the data into the desired format.
+    if _LOG.isEnabledFor(logging.DEBUG):
+        _LOG.debug("keys=%s", str(dfs.keys()))
+    df = pd.concat(dfs.values(), axis=1, keys=dfs.keys())
+    df = df.swaplevel(i=0, j=1, axis=1)
+    df.sort_index(axis=1, level=0, inplace=True)
+    # Remove the asset_id column, since it's redundant.
+    del df[asset_id_col]
+    if _LOG.isEnabledFor(logging.DEBUG):
+        _LOG.debug(
+            "After multiindex conversion:\n%s",
+            hpandas.df_to_str(df.head()),
+        )
+    return df
 
 
 def convert_to_list(to_list: NodeColumnList) -> List[NodeColumn]:

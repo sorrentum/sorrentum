@@ -55,10 +55,10 @@ def match_orders(
 
     :param orders: orders to match
     :param clearing_price: clearing price
-    :param base_token: name of the base token for swaps, which determines
-        the quantity
-    :param quote_token: name of the quote token for swaps, which determines
-        the price
+    :param base_token: name of the base token for swaps, which
+        determines the quantity
+    :param quote_token: name of the quote token for swaps, which
+        determines the price
     :return: transfers implemented to match orders
     """
     _LOG.debug(hprint.to_str("orders"))

@@ -13,6 +13,7 @@ import core.finance as cofinanc
 import core.finance.bid_ask as cfibiask
 import core.finance.resampling as cfinresa
 import dataflow.core as dtfcore
+import dataflow.core.utils as dtfcorutil
 import dataflow.system.source_nodes as dtfsysonod
 
 
@@ -58,7 +59,7 @@ def calculate_vwap_twap(df: pd.DataFrame, resampling_rule: str) -> pd.DataFrame:
         "join_output_with_input": False,
     }
     # Put the data in the DataFlow format (which is multi-index).
-    converted_data = dtfsysonod._convert_to_multiindex(df, "full_symbol")
+    converted_data = dtfcorutil.convert_to_multiindex(df, "full_symbol")
     # Create the node.
     nid = "resample"
     node = dtfcore.GroupedColDfToDfTransformer(
@@ -103,7 +104,7 @@ def calculate_returns(
     }
     # Multiindex transformation.
     if convert_to_multiindex:
-        df = dtfsysonod._convert_to_multiindex(df, "full_symbol")
+        df = dtfcorutil.convert_to_multiindex(df, "full_symbol")
     # Create the node that computes ret_0.
     nid = "ret0"
     node = dtfcore.GroupedColDfToDfTransformer(
@@ -126,7 +127,7 @@ def calculate_bid_ask_statistics(df: pd.DataFrame) -> pd.DataFrame:
     :return: bid-ask data with additional stats
     """
     # Convert to multiindex.
-    converted_df = dtfsysonod._convert_to_multiindex(df, "full_symbol")
+    converted_df = dtfcorutil.convert_to_multiindex(df, "full_symbol")
     # Configure the node to calculate the returns.
     node_bid_ask_config = {
         "in_col_groups": [
@@ -269,7 +270,7 @@ def calculate_overtime_quantities_multiple_symbols(
         result.append(df)
     mult_stats_df = pd.concat(result)
     # Convert to multiindex.
-    mult_stats_df_conv = dtfsysonod._convert_to_multiindex(
+    mult_stats_df_conv = dtfcorutil.convert_to_multiindex(
         mult_stats_df, "full_symbol"
     )
     # Integrate time inside the day.

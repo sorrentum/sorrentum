@@ -7,3 +7,4 @@ poetry
 pytest >= "6.0.0"
 s3fs  # For tools like `publish_notebook.py`.
 tqdm
+pyyaml == 5.3.1

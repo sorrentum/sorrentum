@@ -1,4 +1,5 @@
 import logging
+from typing import Tuple
 
 import pandas as pd
 
@@ -48,3 +49,155 @@ class Test_get_DagBuilder_name_from_string(hunitest.TestCase):
         act = dtfcorutil.get_DagBuilder_name_from_string(dag_builder_ctor_as_str)
         exp = "C5b"
         self.assert_equal(act, exp)
+
+
+class Test_convert_to_multiindex(hunitest.TestCase):
+    @staticmethod
+    def get_test_data_multiple_asset() -> Tuple[pd.DataFrame, pd.MultiIndex]:
+        """
+        Function that return dummy dataframe with multiple asset id and
+        Multiindex.
+        """
+        data = {
+            "id": [13684, 17085, 13684, 17085, 13684],
+            "close": [None, None, None, None, None],
+            "volume": [0, 0, 0, 0, 0],
+        }
+        index = pd.to_datetime(
+            ["2022-01-04 09:01:00-05:00"] * 2
+            + ["2022-01-04 09:02:00-05:00"] * 2
+            + ["2022-01-04 09:03:00-05:00"]
+        )
+        df = pd.DataFrame(data, index=index)
+        expected_df_columns = pd.MultiIndex.from_product(
+            [["close", "volume"], [13684, 17085]], names=[None, "id"]
+        )
+        return df, expected_df_columns
+
+    @staticmethod
+    def get_test_data_single_asset() -> Tuple[pd.DataFrame, pd.MultiIndex]:
+        """
+        Function that return dummy dataframe with single asset id and
+        Multiindex.
+        """
+        data = {
+            "id": [13684, 13684, 13684],
+            "close": [None, None, None],
+            "volume": [0, 0, 0],
+        }
+        index = pd.to_datetime(
+            [
+                "2022-01-04 09:01:00-05:00",
+                "2022-01-04 09:02:00-05:00",
+                "2022-01-04 09:03:00-05:00",
+            ]
+        )
+        df = pd.DataFrame(data, index=index)
+        expected_df_columns = pd.MultiIndex.from_product(
+            [["close", "volume"], [13684]], names=[None, "id"]
+        )
+        return df, expected_df_columns
+
+    def assert_multiindex_columns_equal(
+        self, expected_df_columns: pd.MultiIndex, actual_df: pd.DataFrame
+    ) -> None:
+        """
+        Compare the list of columns of actual df and and expected df.
+        """
+        expected_df_columns = str(expected_df_columns.to_list())
+        actual_df_columns = str(actual_df.columns.to_list())
+        self.assert_equal(expected_df_columns, actual_df_columns)
+
+    def test1(self) -> None:
+        """
+        Test that a function transforms the DataFrame correctly.
+        """
+        # Prepare input and expected output.
+        df, expected_df_columns = self.get_test_data_multiple_asset()
+        asset_id_col = "id"
+        # Prepare the actual output by running function.
+        actual_df = dtfcorutil.convert_to_multiindex(df, asset_id_col)
+        # Compare the result.
+        self.assert_multiindex_columns_equal(expected_df_columns, actual_df)
+
+    def test2(self) -> None:
+        """
+        Test that a function handles a DataFrame with duplicate rows correctly.
+        """
+        # Prepare input and expected output.
+        df, expected_df_columns = self.get_test_data_multiple_asset()
+        asset_id_col = "id"
+        df = pd.concat([df, df.head(1)])
+        # Prepare the actual output by running function.
+        actual_df = dtfcorutil.convert_to_multiindex(df, asset_id_col)
+        # Compare the result.
+        self.assert_multiindex_columns_equal(expected_df_columns, actual_df)
+
+    def test3(self) -> None:
+        """
+        Test that a function handles an empty dataframe correctly.
+        """
+        # Creating empty data frame for input.
+        df = pd.DataFrame(columns=["id", "close", "volume"])
+        asset_id_col = "id"
+        with self.assertRaises(AssertionError) as context:
+            dtfcorutil.convert_to_multiindex(df, asset_id_col)
+        actual_error_message = str(context.exception)
+        expected_error_message = r"""
+        ################################################################################
+        * Failed assertion *
+        1 <= 0
+        ################################################################################
+        """
+        self.assert_equal(actual_error_message, expected_error_message, fuzzy_match=True)
+
+    def test4(self) -> None:
+        """
+        Test that a function handles a DataFrame with only one asset correctly.
+        """
+        # Prepare input and expected output.
+        df, expected_df_columns = self.get_test_data_single_asset()
+        asset_id_col = "id"
+        # Prepare the actual output by running function.
+        actual_df = dtfcorutil.convert_to_multiindex(df, asset_id_col)
+        # Compare the result.
+        self.assert_multiindex_columns_equal(expected_df_columns, actual_df)
+
+    def test5(self) -> None:
+        """
+        Test that a function handles the case where the asset_id_col doesn't
+        exist.
+        """
+        # Prepare input and expected output.
+        df = self.get_test_data_single_asset()
+        asset_id_col = "nonexistent_column"
+        with self.assertRaises(AssertionError) as context:
+            dtfcorutil.convert_to_multiindex(df, asset_id_col)
+        # Get the actual error message
+        actual_error_message = str(context.exception)
+        expected_error_message = r"""
+        ################################################################################
+        * Failed assertion *
+        Instance of '(                              id close  volume
+        2022-01-04 09:01:00-05:00  13684  None       0
+        2022-01-04 09:02:00-05:00  13684  None       0
+        2022-01-04 09:03:00-05:00  13684  None       0, MultiIndex([( 'close', 13684),
+                                ('volume', 13684)],
+                                                      names=[None, 'id']))' is '<class 'tuple'>' instead of '<class 'pandas.core.frame.DataFrame'>'
+        ################################################################################
+        """
+        self.assert_equal(actual_error_message, expected_error_message, fuzzy_match=True)
+
+    def test6(self) -> None:
+        """
+        Test that a function handles the case where there is no index in the
+        dataframe.
+        """
+        # Prepare input and expected output.
+        df, expected_df_columns = self.get_test_data_single_asset()
+        asset_id_col = "id"
+        df = df.reset_index(drop=True)
+        # Prepare the actual output by running function.
+        actual_df = dtfcorutil.convert_to_multiindex(df, asset_id_col)
+        # Compare the result.
+        self.assert_multiindex_columns_equal(expected_df_columns, actual_df)

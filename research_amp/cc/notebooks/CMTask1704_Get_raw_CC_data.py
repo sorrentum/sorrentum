@@ -28,6 +28,7 @@ import core.finance.bid_ask as cfibiask
 import core.finance.resampling as cfinresa
 import core.plotting.normality as cplonorm
 import dataflow.core as dtfcore
+import dataflow.core.utils as dtfcorutil
 import dataflow.system.source_nodes as dtfsysonod
 import helpers.hdatetime as hdateti
 import helpers.hdbg as hdbg
@@ -131,7 +132,7 @@ def calculate_vwap_twap(df: pd.DataFrame, resampling_rule: str) -> pd.DataFrame:
         "join_output_with_input": False,
     }
     # Put the data in the DataFlow format (which is multi-index).
-    converted_data = dtfsysonod._convert_to_multiindex(df, "full_symbol")
+    converted_data = dtfcorutil.convert_to_multiindex(df, "full_symbol")
     # Create the node.
     nid = "resample"
     node = dtfcore.GroupedColDfToDfTransformer(
@@ -380,7 +381,7 @@ def process_bid_ask_data(df, full_symbol, resampling_rule):
     # Resample.
     converted_resampled_df = resample_bid_ask(converted_df, resampling_rule)
     # Convert to multiindex.
-    converted_resampled_df = dtfsysonod._convert_to_multiindex(
+    converted_resampled_df = dtfcorutil.convert_to_multiindex(
         converted_resampled_df, "full_symbol"
     )
     return converted_resampled_df

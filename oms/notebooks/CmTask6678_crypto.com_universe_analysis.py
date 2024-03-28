@@ -227,7 +227,7 @@ data2
 
 
 # %%
-def _convert_to_multiindex(df: pd.DataFrame, asset_id_col: str) -> pd.DataFrame:
+def convert_to_multiindex(df: pd.DataFrame, asset_id_col: str) -> pd.DataFrame:
     """
     Transform a df like: ```
 
@@ -288,7 +288,7 @@ def _convert_to_multiindex(df: pd.DataFrame, asset_id_col: str) -> pd.DataFrame:
 
 
 # %%
-df = _convert_to_multiindex(data2, "currency_pair")
+df = convert_to_multiindex(data2, "currency_pair")
 df
 
 # %%
@@ -402,7 +402,7 @@ perp_cry_data = perp_data2.copy(deep=True)
 perp_data2
 
 # %%
-perp_df = _convert_to_multiindex(perp_data2, "currency_pair")
+perp_df = convert_to_multiindex(perp_data2, "currency_pair")
 perp_df
 
 # %%

@@ -35,6 +35,7 @@ import core.finance as cofinanc
 import core.finance.resampling as cfinresa
 import core.finance.returns as cfinretu
 import dataflow.core as dtfcore
+import dataflow.core.utils as dtfcorutil
 import dataflow.system as dtfsys
 import dataflow.universe as dtfuniver
 import helpers.hdbg as hdbg
@@ -209,7 +210,7 @@ data_hist_num = data_hist.drop(
 
 # %% run_control={"marked": false}
 # Convert historical data to multiindex format.
-converted_data = dtfsys.source_nodes._convert_to_multiindex(
+converted_data = dtfcorutil.convert_to_multiindex(
     data_hist_num, "asset_id"
 )
 converted_data.head(3)
@@ -273,7 +274,7 @@ node_resampling_config = {
     "join_output_with_input": False,
 }
 # Put the data in the DataFlow format (which is multi-index).
-converted_data = dtfsys.source_nodes._convert_to_multiindex(data_hist, "asset_id")
+converted_data = dtfcorutil.convert_to_multiindex(data_hist, "asset_id")
 # Create the node.
 nid = "resample"
 node = dtfcore.GroupedColDfToDfTransformer(
