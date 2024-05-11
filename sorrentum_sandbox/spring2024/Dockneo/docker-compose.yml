@@ -1,0 +1,11 @@
+version: '3'
+services:
+  neo4j:
+    build: .
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - ./data:/var/lib/neo4j/import
+    environment:
+      NEO4J_AUTH: neo4j/password

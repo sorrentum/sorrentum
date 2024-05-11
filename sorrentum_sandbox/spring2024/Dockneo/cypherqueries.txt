@@ -1,0 +1,37 @@
+// Loading data
+LOAD CSV WITH HEADERS FROM 'file:///data.csv' AS row
+RETURN row
+
+// Load user and tags (or post)
+LOAD CSV WITH HEADERS FROM 'file:///data.csv' AS row
+CREATE (:User {id: row.id, screenName: row.screenName})
+CREATE (:Post {tweetId: row.tweetId, tags: row.tags})
+
+
+LOAD CSV WITH HEADERS FROM 'file:///data.csv' AS row
+CREATE (:User {id: row.id, screenName: row.screenName, followersCount: toInteger(row.followersCount), friendsCount: toInteger(row.friendsCount)})
+CREATE (:Post {tweetId: row.tweetId, tags: split(row.tags, '|')})
+
+// checking the data 
+MATCH (user:User)
+RETURN user
+
+MATCH (post:Post)
+RETURN post
+
+// Influencial Users (more than 1000 followers)
+MATCH (user:User)
+WHERE user.followersCount > 1000
+RETURN user.screenName, user.followersCount
+ORDER BY user.followersCount DESC
+
+// Friend of friends (enter your user screename in place of 'User')
+MATCH (user:User)-[:FRIENDS_WITH]-()-[:FRIENDS_WITH]-(fof:User)
+WHERE user.screenName = 'User' 
+RETURN fof.screenName AS FriendOfFriend
+
+// Common connection (enter your user screennames in place of 'User1' and 'User2')
+MATCH (user1:User)-[:FRIENDS_WITH]-(common:User)-[:FRIENDS_WITH]-(user2:User)
+WHERE user1 <> user2
+AND user1.screenName = 'User1' AND user2.screenName = 'User2'
+RETURN common.screenName AS CommonConnection
