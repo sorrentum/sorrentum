@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+  rabbitmq:
+    image: 'rabbitmq:3-management'
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+    labels:
+      NAME: 'rabbitmq'
+
+  emit:
+    build: .
+    volumes:
+      - .:/data
+    command: python emit_log_topic.py info
+    depends_on:
+      - rabbitmq
+
+  receive:
+    build: .
+    volumes:
+      - .:/data
+    command: python receive_logs_topic.py info
+    depends_on:
+      - rabbitmq
