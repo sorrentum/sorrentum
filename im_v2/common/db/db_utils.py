@@ -318,7 +318,7 @@ def fetch_last_minute_bid_ask_rt_db_data(
     src_table: str,
     time_zone: str,
     exchange_id: str,
-) -> pd.Timestamp:
+) -> pd.DataFrame:
     """
     Fetch last full minute of bid/ask RT data as an left-closed interval.
 
