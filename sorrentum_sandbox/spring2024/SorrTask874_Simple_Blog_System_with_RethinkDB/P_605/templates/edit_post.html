@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Post</title>
+    <style>
+        body {
+            font-size: 18px;
+        }
+
+        h1 {
+            font-size: 28px;
+        }
+
+        label {
+            font-size: 20px;
+        }
+
+        input[type="text"],
+        textarea {
+            font-size: 18px;
+            padding: 10px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        input[type="submit"] {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            font-size: 15px;
+            border-radius: 3px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+
+        .format-button {
+            background-color: #f0f0f0;
+            color: #333;
+            border: none;
+            padding: 5px 10px;
+            margin-right: 5px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .format-button.active {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .discard-button {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: red;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <a href="{{ url_for('post', post_id=post.id) }}" class="discard-button">Discard Changes</a>
+
+    <h1>Edit Post</h1>
+    <form action="{{ url_for('edit_post_route', post_id=post.id) }}" method="post">
+        <label for="title" style="font-size: 30px;">Title:</label><br>
+        <input type="text" id="title" name="title" value="{{ post.title }}"><br>
+        <label for="content" style="font-size: 30px;">Content:</label><br>
+        <textarea id="content" name="content" rows="10">{{ post.content }}</textarea><br>
+        <button type="button" class="format-button" onclick="formatText('bold')">Bold</button>
+        <button type="button" class="format-button" onclick="formatText('italic')">Italic</button>
+        <button type="button" class="format-button" onclick="formatText('underline')">Underline</button><br>
+        <input type="submit" value="Save Changes">
+    </form>
+
+    <script>
+        function formatText(style) {
+            var textarea = document.getElementById("content");
+            var start = textarea.selectionStart;
+            var end = textarea.selectionEnd;
+            var selectedText = textarea.value.substring(start, end);
+            var newText;
+            switch(style) {
+                case 'bold':
+                    newText = '<b>' + selectedText + '</b>';
+                    break;
+                case 'italic':
+                    newText = '<i>' + selectedText + '</i>';
+                    break;
+                case 'underline':
+                    newText = '<u>' + selectedText + '</u>';
+                    break;
+            }
+            textarea.value = textarea.value.substring(0, start) + newText + textarea.value.substring(end);
+        }
+    </script>
+</body>
+</html>

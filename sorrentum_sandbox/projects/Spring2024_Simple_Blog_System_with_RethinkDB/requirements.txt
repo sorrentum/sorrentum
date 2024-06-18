@@ -1,0 +1,4 @@
+Flask==3.0.3
+rethinkdb==2.4.4
+
+

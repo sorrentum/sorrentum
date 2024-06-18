@@ -1,0 +1,220 @@
+2024-04-30T12:38:11.308551000 0.007242s notice: Recursively removing directory /Users/rahul/Desktop/P_605/rethinkdb_data/tmp
+2024-04-30T12:38:11.309919000 0.008610s notice: Initializing directory /Users/rahul/Desktop/P_605/rethinkdb_data
+2024-04-30T12:38:11.310001000 0.008692s info: Creating a default database for your convenience. (This is because you ran 'rethinkdb' without 'create', 'serve', or '--join', and the directory '/Users/rahul/Desktop/P_605/rethinkdb_data' did not already exist or is empty.)
+2024-04-30T12:38:11.310020000 0.008710s notice: Running rethinkdb 2.4.4 (arm64-apple-darwin23.0.0) (CLANG 15.0.0 (clang-1500.0.40.1))...
+2024-04-30T12:38:11.314175000 0.012866s notice: Running on Darwin 23.4.0 arm64
+2024-04-30T12:38:11.314198000 0.012888s notice: Loading data from directory /Users/rahul/Desktop/P_605/rethinkdb_data
+2024-04-30T12:38:11.355726000 0.054416s info: Automatically using cache size of 346 MB
+2024-04-30T12:38:11.355904000 0.054595s notice: Listening for intracluster connections on port 29015
+2024-04-30T12:38:11.356268000 0.054958s notice: Listening for client driver connections on port 28015
+2024-04-30T12:38:11.356294000 0.054985s notice: Listening for administrative HTTP connections on port 8080
+2024-04-30T12:38:11.356296000 0.054987s notice: Listening on cluster addresses: 127.0.0.1, ::1
+2024-04-30T12:38:11.356298000 0.054988s notice: Listening on driver addresses: 127.0.0.1, ::1
+2024-04-30T12:38:11.356300000 0.054990s notice: Listening on http addresses: 127.0.0.1, ::1
+2024-04-30T12:38:11.356302000 0.054992s notice: To fully expose RethinkDB on the network, bind to all addresses by running rethinkdb with the `--bind all` command line option.
+2024-04-30T12:38:11.356304000 0.054995s notice: Server ready, "localhost_pi8" 185a0771-c225-4bad-995d-1d49b8aa30ac
+2024-04-30T12:38:48.749795000 37.448533s info: Table dc51a055-e208-498a-965b-5e73a5f0bcf5: Starting a new Raft election for term 1.
+2024-04-30T12:38:48.750080000 37.448817s info: Table dc51a055-e208-498a-965b-5e73a5f0bcf5: Added replica on this server.
+2024-04-30T12:38:48.756481000 37.455218s info: Table dc51a055-e208-498a-965b-5e73a5f0bcf5: This server is Raft leader for term 1. Latest log index is 0.
+2024-04-30T12:50:10.273908000 718.975234s notice: Server got SIGINT from pid 628, uid 501; shutting down...
+2024-04-30T12:50:10.274187000 718.975512s notice: Shutting down client connections...
+2024-04-30T12:50:10.274606000 718.975931s notice: All client connections closed.
+2024-04-30T12:50:10.274613000 718.975938s notice: Shutting down storage engine... (This may take a while if you had a lot of unflushed data in the writeback cache.)
+2024-04-30T12:50:10.277549000 718.978875s notice: Storage engine shut down.
+2024-04-30T12:53:00.389261000 0.007770s notice: Running rethinkdb 2.4.4 (arm64-apple-darwin23.0.0) (CLANG 15.0.0 (clang-1500.0.40.1))...
+2024-04-30T12:53:00.396800000 0.015309s notice: Running on Darwin 23.4.0 arm64
+2024-04-30T12:53:00.396825000 0.015334s notice: Loading data from directory /Users/rahul/Desktop/P_605/rethinkdb_data
+2024-04-30T12:53:00.410158000 0.028667s info: Automatically using cache size of 201 MB
+2024-04-30T12:53:00.410366000 0.028875s notice: Listening for intracluster connections on port 29015
+2024-04-30T12:53:00.416141000 0.034650s notice: Listening for client driver connections on port 28015
+2024-04-30T12:53:00.416174000 0.034683s notice: Listening for administrative HTTP connections on port 8080
+2024-04-30T12:53:00.416178000 0.034687s notice: Listening on cluster addresses: 127.0.0.1, ::1
+2024-04-30T12:53:00.416179000 0.034688s notice: Listening on driver addresses: 127.0.0.1, ::1
+2024-04-30T12:53:00.416181000 0.034690s notice: Listening on http addresses: 127.0.0.1, ::1
+2024-04-30T12:53:00.416184000 0.034693s notice: To fully expose RethinkDB on the network, bind to all addresses by running rethinkdb with the `--bind all` command line option.
+2024-04-30T12:53:00.416185000 0.034694s notice: Server ready, "localhost_pi8" 185a0771-c225-4bad-995d-1d49b8aa30ac
+2024-04-30T12:53:02.319775000 1.938292s info: Table dc51a055-e208-498a-965b-5e73a5f0bcf5: Starting a new Raft election for term 2.
+2024-04-30T12:53:02.328160000 1.946676s info: Table dc51a055-e208-498a-965b-5e73a5f0bcf5: This server is Raft leader for term 2. Latest log index is 3.
+2024-04-30T13:13:09.362365000 1208.975929s notice: Server got SIGINT from pid 628, uid 501; shutting down...
+2024-04-30T13:13:09.362611000 1208.976173s notice: Shutting down client connections...
+2024-04-30T13:13:09.363117000 1208.976679s notice: All client connections closed.
+2024-04-30T13:13:09.363122000 1208.976684s notice: Shutting down storage engine... (This may take a while if you had a lot of unflushed data in the writeback cache.)
+2024-04-30T13:13:09.368837000 1208.982399s notice: Storage engine shut down.
+2024-04-30T13:13:41.171898000 0.027630s notice: Running rethinkdb 2.4.4 (arm64-apple-darwin23.0.0) (CLANG 15.0.0 (clang-1500.0.40.1))...
+2024-04-30T13:13:41.175147000 0.030880s notice: Running on Darwin 23.4.0 arm64
+2024-04-30T13:13:41.175173000 0.030904s notice: Loading data from directory /Users/rahul/Desktop/P_605/rethinkdb_data
+2024-04-30T13:13:41.187405000 0.043137s info: Automatically using cache size of 193 MB
+2024-04-30T13:13:41.187992000 0.043724s notice: Listening for intracluster connections on port 29015
+2024-04-30T13:13:41.194142000 0.049874s notice: Listening for client driver connections on port 28015
+2024-04-30T13:13:41.194183000 0.049915s notice: Listening for administrative HTTP connections on port 8080
+2024-04-30T13:13:41.194187000 0.049919s notice: Listening on cluster addresses: 127.0.0.1, ::1
+2024-04-30T13:13:41.194188000 0.049920s notice: Listening on driver addresses: 127.0.0.1, ::1
+2024-04-30T13:13:41.194189000 0.049921s notice: Listening on http addresses: 127.0.0.1, ::1
+2024-04-30T13:13:41.194192000 0.049924s notice: To fully expose RethinkDB on the network, bind to all addresses by running rethinkdb with the `--bind all` command line option.
+2024-04-30T13:13:41.194193000 0.049925s notice: Server ready, "localhost_pi8" 185a0771-c225-4bad-995d-1d49b8aa30ac
+2024-04-30T13:13:42.377766000 1.233500s info: Table dc51a055-e208-498a-965b-5e73a5f0bcf5: Starting a new Raft election for term 3.
+2024-04-30T13:13:42.384344000 1.240078s info: Table dc51a055-e208-498a-965b-5e73a5f0bcf5: This server is Raft leader for term 3. Latest log index is 6.
+2024-04-30T13:13:46.649225000 5.504967s notice: Server got SIGINT from pid 628, uid 501; shutting down...
+2024-04-30T13:13:46.649610000 5.505351s notice: Shutting down client connections...
+2024-04-30T13:13:46.649687000 5.505428s notice: All client connections closed.
+2024-04-30T13:13:46.649691000 5.505432s notice: Shutting down storage engine... (This may take a while if you had a lot of unflushed data in the writeback cache.)
+2024-04-30T13:13:46.653286000 5.509028s notice: Storage engine shut down.
+2024-04-30T20:14:19.221163000 0.033539s notice: Running rethinkdb 2.4.4 (arm64-apple-darwin23.0.0) (CLANG 15.0.0 (clang-1500.0.40.1))...
+2024-04-30T20:14:19.225131000 0.037506s notice: Running on Darwin 23.4.0 arm64
+2024-04-30T20:14:19.225147000 0.037523s notice: Loading data from directory /Users/rahul/Desktop/P_605/rethinkdb_data
+2024-04-30T20:14:19.238095000 0.050470s info: Automatically using cache size of 587 MB
+2024-04-30T20:14:19.239382000 0.051757s notice: Listening for intracluster connections on port 29015
+2024-04-30T20:14:19.246567000 0.058942s notice: Listening for client driver connections on port 28015
+2024-04-30T20:14:19.246612000 0.058987s notice: Listening for administrative HTTP connections on port 8080
+2024-04-30T20:14:19.246617000 0.058992s notice: Listening on cluster addresses: 127.0.0.1, ::1
+2024-04-30T20:14:19.246620000 0.058995s notice: Listening on driver addresses: 127.0.0.1, ::1
+2024-04-30T20:14:19.246622000 0.058997s notice: Listening on http addresses: 127.0.0.1, ::1
+2024-04-30T20:14:19.246626000 0.059001s notice: To fully expose RethinkDB on the network, bind to all addresses by running rethinkdb with the `--bind all` command line option.
+2024-04-30T20:14:19.246627000 0.059002s notice: Server ready, "localhost_pi8" 185a0771-c225-4bad-995d-1d49b8aa30ac
+2024-04-30T20:14:20.742938000 1.555296s info: Table dc51a055-e208-498a-965b-5e73a5f0bcf5: Starting a new Raft election for term 4.
+2024-04-30T20:14:20.751231000 1.563589s info: Table dc51a055-e208-498a-965b-5e73a5f0bcf5: This server is Raft leader for term 4. Latest log index is 9.
+2024-05-01T11:04:38.438399000 0.038958s notice: Running rethinkdb 2.4.4 (arm64-apple-darwin23.0.0) (CLANG 15.0.0 (clang-1500.0.40.1))...
+2024-05-01T11:04:38.442159000 0.042719s notice: Running on Darwin 23.4.0 arm64
+2024-05-01T11:04:38.442182000 0.042742s notice: Loading data from directory /Users/rahul/Desktop/P_605/rethinkdb_data
+2024-05-01T11:04:38.458295000 0.058855s info: Automatically using cache size of 100 MB
+2024-05-01T11:04:38.458298000 0.058857s warn: Cache size does not leave much memory for server and query overhead (available memory: 982 MB).
+2024-05-01T11:04:38.458300000 0.058859s warn: Cache size is very low and may impact performance.
+2024-05-01T11:04:38.459446000 0.060005s notice: Listening for intracluster connections on port 29015
+2024-05-01T11:04:38.468368000 0.068928s notice: Listening for client driver connections on port 28015
+2024-05-01T11:04:38.468394000 0.068954s notice: Listening for administrative HTTP connections on port 8080
+2024-05-01T11:04:38.468394001 0.068954s notice: Listening on cluster addresses: 127.0.0.1, ::1
+2024-05-01T11:04:38.468415000 0.068974s notice: Listening on driver addresses: 127.0.0.1, ::1
+2024-05-01T11:04:38.468416000 0.068975s notice: Listening on http addresses: 127.0.0.1, ::1
+2024-05-01T11:04:38.468417000 0.068977s notice: To fully expose RethinkDB on the network, bind to all addresses by running rethinkdb with the `--bind all` command line option.
+2024-05-01T11:04:38.468420000 0.068980s notice: Server ready, "localhost_pi8" 185a0771-c225-4bad-995d-1d49b8aa30ac
+2024-05-01T11:04:39.855866000 1.456438s info: Table dc51a055-e208-498a-965b-5e73a5f0bcf5: Starting a new Raft election for term 5.
+2024-05-01T11:04:39.904780000 1.505352s info: Table dc51a055-e208-498a-965b-5e73a5f0bcf5: This server is Raft leader for term 5. Latest log index is 12.
+2024-05-01T11:52:52.570167000 2894.187197s warn: Received invalid clustering header from [::1]:61190, closing connection -- something might be connecting to the wrong port.
+2024-05-01T13:14:22.793305000 3779.822207s notice: Server got SIGINT from pid 13811, uid 501; shutting down...
+2024-05-01T13:14:22.793548000 3779.822450s notice: Shutting down client connections...
+2024-05-01T13:14:22.794111000 3779.823013s notice: All client connections closed.
+2024-05-01T13:14:22.794116000 3779.823018s notice: Shutting down storage engine... (This may take a while if you had a lot of unflushed data in the writeback cache.)
+2024-05-01T13:14:22.800482000 3779.829383s notice: Storage engine shut down.
+2024-05-01T13:52:10.882249000 0.034694s notice: Running rethinkdb 2.4.4 (arm64-apple-darwin23.0.0) (CLANG 15.0.0 (clang-1500.0.40.1))...
+2024-05-01T13:52:10.892612000 0.045057s notice: Running on Darwin 23.4.0 arm64
+2024-05-01T13:52:10.892631000 0.045077s notice: Loading data from directory /Users/rahul/Desktop/P_605/rethinkdb_data
+2024-05-01T13:52:10.908741000 0.061187s info: Automatically using cache size of 300 MB
+2024-05-01T13:52:10.909615000 0.062060s notice: Listening for intracluster connections on port 29015
+2024-05-01T13:52:10.917177000 0.069622s notice: Listening for client driver connections on port 28015
+2024-05-01T13:52:10.917213000 0.069658s notice: Listening for administrative HTTP connections on port 8080
+2024-05-01T13:52:10.917217000 0.069662s notice: Listening on cluster addresses: 127.0.0.1, ::1
+2024-05-01T13:52:10.917218000 0.069663s notice: Listening on driver addresses: 127.0.0.1, ::1
+2024-05-01T13:52:10.917219000 0.069664s notice: Listening on http addresses: 127.0.0.1, ::1
+2024-05-01T13:52:10.917222000 0.069668s notice: To fully expose RethinkDB on the network, bind to all addresses by running rethinkdb with the `--bind all` command line option.
+2024-05-01T13:52:10.917225000 0.069670s notice: Server ready, "localhost_pi8" 185a0771-c225-4bad-995d-1d49b8aa30ac
+2024-05-01T13:52:12.500245000 1.652702s info: Table dc51a055-e208-498a-965b-5e73a5f0bcf5: Starting a new Raft election for term 6.
+2024-05-01T13:52:12.508014000 1.660471s info: Table dc51a055-e208-498a-965b-5e73a5f0bcf5: This server is Raft leader for term 6. Latest log index is 15.
+2024-05-01T13:52:26.929329000 16.081888s notice: Server got SIGINT from pid 13811, uid 501; shutting down...
+2024-05-01T13:52:26.929472000 16.082031s notice: Shutting down client connections...
+2024-05-01T13:52:26.929608000 16.082167s notice: All client connections closed.
+2024-05-01T13:52:26.929610000 16.082169s notice: Shutting down storage engine... (This may take a while if you had a lot of unflushed data in the writeback cache.)
+2024-05-01T13:52:26.933367000 16.085926s notice: Storage engine shut down.
+2024-05-01T13:52:47.613452000 0.013244s notice: Running rethinkdb 2.4.4 (arm64-apple-darwin23.0.0) (CLANG 15.0.0 (clang-1500.0.40.1))...
+2024-05-01T13:52:47.619796000 0.019587s notice: Running on Darwin 23.4.0 arm64
+2024-05-01T13:52:47.619820000 0.019611s notice: Loading data from directory /Users/rahul/Desktop/P_605/rethinkdb_data
+2024-05-01T13:52:47.633878000 0.033670s info: Automatically using cache size of 365 MB
+2024-05-01T13:52:47.634055000 0.033847s notice: Listening for intracluster connections on port 29015
+2024-05-01T13:52:47.640348000 0.040140s notice: Listening for client driver connections on port 28015
+2024-05-01T13:52:47.640399000 0.040191s notice: Listening for administrative HTTP connections on port 8080
+2024-05-01T13:52:47.640400000 0.040191s notice: Listening on cluster addresses: 127.0.0.1, ::1
+2024-05-01T13:52:47.640405000 0.040196s notice: Listening on driver addresses: 127.0.0.1, ::1
+2024-05-01T13:52:47.640406000 0.040198s notice: Listening on http addresses: 127.0.0.1, ::1
+2024-05-01T13:52:47.640407000 0.040199s notice: To fully expose RethinkDB on the network, bind to all addresses by running rethinkdb with the `--bind all` command line option.
+2024-05-01T13:52:47.640412000 0.040204s notice: Server ready, "localhost_pi8" 185a0771-c225-4bad-995d-1d49b8aa30ac
+2024-05-01T13:52:49.080094000 1.479899s info: Table dc51a055-e208-498a-965b-5e73a5f0bcf5: Starting a new Raft election for term 7.
+2024-05-01T13:52:49.088620000 1.488422s info: Table dc51a055-e208-498a-965b-5e73a5f0bcf5: This server is Raft leader for term 7. Latest log index is 18.
+2024-05-01T17:25:26.228745000 9716.679195s notice: Server got SIGINT from pid 16515, uid 501; shutting down...
+2024-05-01T17:25:26.229221000 9716.679671s notice: Shutting down client connections...
+2024-05-01T17:25:26.230142000 9716.680591s notice: All client connections closed.
+2024-05-01T17:25:26.230147000 9716.680596s notice: Shutting down storage engine... (This may take a while if you had a lot of unflushed data in the writeback cache.)
+2024-05-01T17:25:26.237943000 9716.688392s notice: Storage engine shut down.
+2024-05-01T17:45:33.179040000 0.012899s notice: Running rethinkdb 2.4.4 (arm64-apple-darwin23.0.0) (CLANG 15.0.0 (clang-1500.0.40.1))...
+2024-05-01T17:45:33.183866000 0.017725s notice: Running on Darwin 23.4.0 arm64
+2024-05-01T17:45:33.183890000 0.017749s notice: Loading data from directory /Users/rahul/Desktop/P_605/rethinkdb_data
+2024-05-01T17:45:33.201202000 0.035061s info: Automatically using cache size of 935 MB
+2024-05-01T17:45:33.201501000 0.035360s notice: Listening for intracluster connections on port 29015
+2024-05-01T17:45:33.209217000 0.043075s notice: Listening for client driver connections on port 28015
+2024-05-01T17:45:33.209286000 0.043145s notice: Listening for administrative HTTP connections on port 8080
+2024-05-01T17:45:33.209291000 0.043150s notice: Listening on cluster addresses: 127.0.0.1, ::1
+2024-05-01T17:45:33.209292000 0.043151s notice: Listening on driver addresses: 127.0.0.1, ::1
+2024-05-01T17:45:33.209294000 0.043152s notice: Listening on http addresses: 127.0.0.1, ::1
+2024-05-01T17:45:33.209301000 0.043160s notice: To fully expose RethinkDB on the network, bind to all addresses by running rethinkdb with the `--bind all` command line option.
+2024-05-01T17:45:33.209302000 0.043161s notice: Server ready, "localhost_pi8" 185a0771-c225-4bad-995d-1d49b8aa30ac
+2024-05-01T17:45:35.156912000 1.990776s info: Table dc51a055-e208-498a-965b-5e73a5f0bcf5: Starting a new Raft election for term 8.
+2024-05-01T17:45:35.164797000 1.998659s info: Table dc51a055-e208-498a-965b-5e73a5f0bcf5: This server is Raft leader for term 8. Latest log index is 21.
+2024-05-01T17:53:24.006529000 470.841209s notice: Server got SIGINT from pid 20107, uid 501; shutting down...
+2024-05-01T17:53:24.006881000 470.841560s notice: Shutting down client connections...
+2024-05-01T17:53:24.007023000 470.841702s notice: All client connections closed.
+2024-05-01T17:53:24.007026000 470.841705s notice: Shutting down storage engine... (This may take a while if you had a lot of unflushed data in the writeback cache.)
+2024-05-01T17:53:24.010549000 470.845228s notice: Storage engine shut down.
+2024-05-01T18:33:16.661786000 0.022060s notice: Running rethinkdb 2.4.4 (arm64-apple-darwin23.0.0) (CLANG 15.0.0 (clang-1500.0.40.1))...
+2024-05-01T18:33:16.665935000 0.026209s notice: Running on Darwin 23.4.0 arm64
+2024-05-01T18:33:16.665957000 0.026230s notice: Loading data from directory /Users/rahul/Desktop/P_605/rethinkdb_data
+2024-05-01T18:33:16.683336000 0.043610s info: Automatically using cache size of 204 MB
+2024-05-01T18:33:16.683653000 0.043927s notice: Listening for intracluster connections on port 29015
+2024-05-01T18:33:16.690373000 0.050647s notice: Listening for client driver connections on port 28015
+2024-05-01T18:33:16.690400000 0.050674s notice: Listening for administrative HTTP connections on port 8080
+2024-05-01T18:33:16.690404000 0.050677s notice: Listening on cluster addresses: 127.0.0.1, ::1
+2024-05-01T18:33:16.690452000 0.050726s notice: Listening on driver addresses: 127.0.0.1, ::1
+2024-05-01T18:33:16.690453000 0.050727s notice: Listening on http addresses: 127.0.0.1, ::1
+2024-05-01T18:33:16.690455000 0.050728s notice: To fully expose RethinkDB on the network, bind to all addresses by running rethinkdb with the `--bind all` command line option.
+2024-05-01T18:33:16.690458000 0.050732s notice: Server ready, "localhost_pi8" 185a0771-c225-4bad-995d-1d49b8aa30ac
+2024-05-01T18:33:17.903569000 1.263857s info: Table dc51a055-e208-498a-965b-5e73a5f0bcf5: Starting a new Raft election for term 9.
+2024-05-01T18:33:17.911593000 1.271882s info: Table dc51a055-e208-498a-965b-5e73a5f0bcf5: This server is Raft leader for term 9. Latest log index is 24.
+2024-05-01T18:34:48.136582000 91.497816s notice: Server got SIGINT from pid 21996, uid 501; shutting down...
+2024-05-01T18:34:48.136910000 91.498143s notice: Shutting down client connections...
+2024-05-01T18:34:48.137219000 91.498452s notice: All client connections closed.
+2024-05-01T18:34:48.137222000 91.498454s notice: Shutting down storage engine... (This may take a while if you had a lot of unflushed data in the writeback cache.)
+2024-05-01T18:34:48.140423000 91.501656s notice: Storage engine shut down.
+2024-05-03T19:51:55.909522000 0.033960s notice: Running rethinkdb 2.4.4 (arm64-apple-darwin23.0.0) (CLANG 15.0.0 (clang-1500.0.40.1))...
+2024-05-03T19:51:55.913825000 0.038263s notice: Running on Darwin 23.4.0 arm64
+2024-05-03T19:51:55.913848000 0.038286s notice: Loading data from directory /Users/rahul/Desktop/P_605/rethinkdb_data
+2024-05-03T19:51:55.929256000 0.053694s info: Automatically using cache size of 266 MB
+2024-05-03T19:51:55.930549000 0.054987s notice: Listening for intracluster connections on port 29015
+2024-05-03T19:51:55.941512000 0.065949s notice: Listening for client driver connections on port 28015
+2024-05-03T19:51:55.941546000 0.065983s notice: Listening for administrative HTTP connections on port 8080
+2024-05-03T19:51:55.941546001 0.065984s notice: Listening on cluster addresses: 127.0.0.1, ::1
+2024-05-03T19:51:55.941548000 0.065985s notice: Listening on driver addresses: 127.0.0.1, ::1
+2024-05-03T19:51:55.941585000 0.066023s notice: Listening on http addresses: 127.0.0.1, ::1
+2024-05-03T19:51:55.941586000 0.066024s notice: To fully expose RethinkDB on the network, bind to all addresses by running rethinkdb with the `--bind all` command line option.
+2024-05-03T19:51:55.941591000 0.066028s notice: Server ready, "localhost_pi8" 185a0771-c225-4bad-995d-1d49b8aa30ac
+2024-05-03T19:51:57.838882000 1.963326s info: Table dc51a055-e208-498a-965b-5e73a5f0bcf5: Starting a new Raft election for term 10.
+2024-05-03T19:51:57.845561000 1.970004s info: Table dc51a055-e208-498a-965b-5e73a5f0bcf5: This server is Raft leader for term 10. Latest log index is 27.
+2024-05-03T19:52:23.639541000 27.764053s notice: Server got SIGINT from pid 8339, uid 501; shutting down...
+2024-05-03T19:52:23.639809000 27.764320s notice: Shutting down client connections...
+2024-05-03T19:52:23.639874000 27.764385s notice: All client connections closed.
+2024-05-03T19:52:23.639877000 27.764389s notice: Shutting down storage engine... (This may take a while if you had a lot of unflushed data in the writeback cache.)
+2024-05-03T19:52:23.644279000 27.768791s notice: Storage engine shut down.
+2024-05-07T14:40:04.796055000 0.036047s notice: Running rethinkdb 2.4.4 (arm64-apple-darwin23.0.0) (CLANG 15.0.0 (clang-1500.0.40.1))...
+2024-05-07T14:40:04.802811000 0.042803s notice: Running on Darwin 23.4.0 arm64
+2024-05-07T14:40:04.802832000 0.042824s notice: Loading data from directory /Users/rahul/Desktop/P_605/rethinkdb_data
+2024-05-07T14:40:04.820589000 0.060582s info: Automatically using cache size of 309 MB
+2024-05-07T14:40:04.821310000 0.061303s notice: Listening for intracluster connections on port 29015
+2024-05-07T14:40:04.830560000 0.070552s notice: Listening for client driver connections on port 28015
+2024-05-07T14:40:04.830614000 0.070606s notice: Listening for administrative HTTP connections on port 8080
+2024-05-07T14:40:04.830618000 0.070610s notice: Listening on cluster addresses: 127.0.0.1, ::1
+2024-05-07T14:40:04.830619000 0.070611s notice: Listening on driver addresses: 127.0.0.1, ::1
+2024-05-07T14:40:04.830620000 0.070613s notice: Listening on http addresses: 127.0.0.1, ::1
+2024-05-07T14:40:04.830624000 0.070617s notice: To fully expose RethinkDB on the network, bind to all addresses by running rethinkdb with the `--bind all` command line option.
+2024-05-07T14:40:04.830626000 0.070618s notice: Server ready, "localhost_pi8" 185a0771-c225-4bad-995d-1d49b8aa30ac
+2024-05-07T14:40:06.722720000 1.962713s info: Table dc51a055-e208-498a-965b-5e73a5f0bcf5: Starting a new Raft election for term 11.
+2024-05-07T14:40:06.730790000 1.970784s info: Table dc51a055-e208-498a-965b-5e73a5f0bcf5: This server is Raft leader for term 11. Latest log index is 30.
+2024-05-08T11:09:16.705434000 0.038056s notice: Running rethinkdb 2.4.4 (arm64-apple-darwin23.0.0) (CLANG 15.0.0 (clang-1500.0.40.1))...
+2024-05-08T11:09:16.712716000 0.045338s notice: Running on Darwin 23.4.0 arm64
+2024-05-08T11:09:16.712740000 0.045361s notice: Loading data from directory /Users/rahul/Desktop/P_605/rethinkdb_data
+2024-05-08T11:09:16.728835000 0.061457s info: Automatically using cache size of 149 MB
+2024-05-08T11:09:16.730168000 0.062790s notice: Listening for intracluster connections on port 29015
+2024-05-08T11:09:16.746195000 0.078817s notice: Listening for client driver connections on port 28015
+2024-05-08T11:09:16.746475000 0.079096s notice: Listening for administrative HTTP connections on port 8080
+2024-05-08T11:09:16.746484000 0.079106s notice: Listening on cluster addresses: 127.0.0.1, ::1
+2024-05-08T11:09:16.746486000 0.079107s notice: Listening on driver addresses: 127.0.0.1, ::1
+2024-05-08T11:09:16.746488000 0.079109s notice: Listening on http addresses: 127.0.0.1, ::1
+2024-05-08T11:09:16.746493000 0.079114s notice: To fully expose RethinkDB on the network, bind to all addresses by running rethinkdb with the `--bind all` command line option.
+2024-05-08T11:09:16.746495000 0.079116s notice: Server ready, "localhost_pi8" 185a0771-c225-4bad-995d-1d49b8aa30ac
+2024-05-08T11:09:18.269762000 1.602383s info: Table dc51a055-e208-498a-965b-5e73a5f0bcf5: Starting a new Raft election for term 12.
+2024-05-08T11:09:18.278901000 1.611520s info: Table dc51a055-e208-498a-965b-5e73a5f0bcf5: This server is Raft leader for term 12. Latest log index is 33.

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ post.title }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        /* Style for home button */
+        .home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 9999;
+            color: #333;
+            font-size: 24px;
+            text-decoration: none;
+        }
+        /* Style for delete button */
+        .delete-button {
+            position: fixed;
+            top: 10px;
+            right: 20px;
+            z-index: 9999;
+            background-color: #f00;
+            color: #fff;
+            font-size: 18px;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        /* Style for content */
+        .content {
+            margin-top: 50px; 
+        }
+
+        #commenter {
+            width: 500px; 
+            padding: 5px; 
+            font-size: 20px
+        }
+
+        /* Style for the content */
+        #comment {
+            width: 800px; 
+            height: 200px;
+            padding: 5px; 
+            font-size: 20px;
+        }
+
+        /* Style for title */
+        #title {
+            position: relative;
+            width: 100%;
+            height: auto; 
+            background-image: url("{{ url_for('static', filename='image2.jpg') }}"); 
+            background-size: cover;
+            background-position: bottom;
+            color: rgb(234, 240, 242);
+            text-align: left;
+            padding-top: 100px;
+            padding-bottom: 30px;
+            box-sizing: border-box;
+        }
+        .title-text {
+            font-size: 55px;
+        }
+        .content {
+            font-size: 27px;
+            white-space: pre-warp;
+            margin-bottom: 10px;
+        }
+        .commentee,
+        .commenter {
+            font-size: 2px; 
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        /* Style for the "Add Comment" button */
+        .add-comment-button {
+            background-color: #007bff; 
+            border: none;
+            color: white;
+            padding: 6px 12px; 
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 20px; 
+            margin-top: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        /* Style for formatting buttons */
+        .format-button {
+            background-color: #f0f0f0;
+            color: #333;
+            border: none;
+            padding: 5px 10px;
+            margin-right: 5px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        /* Additional styling */
+        .format-button.active {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .edit-button {
+            background-color: #28a745; 
+            border: none;
+            color: white;
+            padding: 6px 12px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 20px;
+            margin-top: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+    </style>
+</head>
+<body>
+    <!-- Home button -->
+    <a href="{{ url_for('index') }}" class="home-button"><i class="fas fa-home"></i></a>
+    
+    <!-- Delete button -->
+    <form action="{{ url_for('delete_post_route', post_id=post.id) }}" method="post" id="deleteForm">
+        <button type="button" class="delete-button" onclick="confirmDelete()"><i class="fas fa-trash"></i> Delete</button>
+    </form>
+
+    <div class="content">
+        <div id="title">
+            <span class="title-text">{{ post.title }}</span>
+        </div>
+        {% for paragraph in post.content.split('\n') %}
+            <p>{{ paragraph | safe}}</p>
+        {% endfor %}
+
+    <script>
+        function confirmDelete() {
+            if (confirm("Are you sure you want to delete this post?")) {
+                document.getElementById('deleteForm').submit();
+            }
+        }
+    </script>
+        <!-- Display comments -->
+        <h2>Comments and Discussions:</h2>
+        <p style="margin-top: 2px;">Please be respectful towards your fellow bloggers.</p>
+        <ul>
+            {% for comment in post.comments %}
+            <li><span class="{{ comment.style | default('') | safe }}">{{ comment.commenter }}</span> says: <span class="{{ comment.style | default('') | safe }}">{{ comment.comment | safe }}</span></li>
+            <form action="{{ url_for('delete_comment_route', post_id=post.id, comment_index=loop.index0) }}" method="post" style="display: inline;">
+                <button type="submit" class="delete-comment-button" onclick="return confirm('Are you sure you want to delete this comment?')">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </form>
+        </li>
+            {% endfor %}
+        </ul>
+
+        <!-- Form to add new comment -->
+        <form action="{{ url_for('add_comment_route', post_id=post.id) }}" method="post">
+            <label for="commenter" style="font-size: 30px;">Your Name:</label><br>
+            <input type="text" id="commenter" name="commenter"><br>
+            <label for="comment" style="font-size: 30px;">Your Comment:</label><br>
+            <textarea id="comment" name="comment"></textarea><br>
+            <button type="button" class="format-button" onclick="formatText('bold')">Bold</button>
+            <button type="button" class="format-button" onclick="formatText('italic')">Italic</button>
+            <button type="button" class="format-button" onclick="formatText('underline')">Underline</button>
+            <input type="submit" value="Add Comment" class="add-comment-button"> <!-- Add this line -->
+        </form>
+    </div>
+
+        <!-- Edit button -->
+        <a href="{{ url_for('edit_post_route', post_id=post.id) }}" class="edit-button"><i class="fas fa-edit"></i> Edit</a>
+    </div>
+
+    <script>
+        // Function to format text in the comment
+        function formatText(style) {
+            var textarea = document.getElementById("comment");
+            var start = textarea.selectionStart;
+            var end = textarea.selectionEnd;
+            var selectedText = textarea.value.substring(start, end);
+            var newText;
+            switch(style) {
+                case 'bold':
+                    newText = '<b>' + selectedText + '</b>';
+                    break;
+                case 'italic':
+                    newText = '<i>' + selectedText + '</i>';
+                    break;
+                case 'underline':
+                    newText = '<u>' + selectedText + '</u>';
+                    break;
+            }
+            textarea.value = textarea.value.substring(0, start) + newText + textarea.value.substring(end);
+        }
+    </script>
+</body>
+</html>

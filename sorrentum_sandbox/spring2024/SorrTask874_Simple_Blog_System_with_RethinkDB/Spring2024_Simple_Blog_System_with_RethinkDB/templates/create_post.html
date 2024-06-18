@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Post</title>
+    <style>
+        h1 {
+            font-size: 50px;
+        }
+        /* Style for the home button */
+        .home-button {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: orange;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        
+        /* Style for the submit button */
+        #submit-button {
+            background-color: #007bff; 
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        /* Style for the title input */
+        #title {
+            width: 800px;
+            padding: 10px; 
+            margin-bottom: 20px; 
+            font-size: 30px; 
+        }
+        .content {
+            font-size: 27px;
+            margin-bottom: 10px;
+        }
+        
+        /* Style for the content textarea */
+        #content {
+            width: 800px; 
+            height: 500px;
+            padding: 10px;
+            font-size: 27px;
+        }
+        
+        /* Style for confirmation message */
+        #confirmation-msg {
+            display: none;
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        /* Style for text formatting buttons */
+        .formatting-button {
+            margin-right: 10px;
+            padding: 5px 10px;
+            font-size: 15px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Create a New Post</h1>
+    <a href="{{ url_for('index') }}" class="home-button">Back</a> <!-- Home button -->
+
+    <form id="post-form" action="{{ url_for('create_post') }}" method="POST">
+        <label for="title" style="font-size: 30px;">Title:</label><br>
+        <input type="text" id="title" name="title" required><br> 
+        <label for="content" style="font-size: 30px;">Content:</label><br>
+        <textarea id="content" name="content" rows="4" cols="50" required></textarea><br> 
+        
+        <!-- Formatting buttons -->
+        <button type="button" class="formatting-button" onclick="formatText('bold')">Bold</button>
+        <button type="button" class="formatting-button" onclick="formatText('italic')">Italic</button>
+        <button type="button" class="formatting-button" onclick="formatText('underline')">Underline</button>
+        
+        <input type="submit" id="submit-button" value="Submit"> <!-- Styled submit button -->
+    </form>
+
+    <!-- Confirmation message -->
+    <div id="confirmation-msg">Post created successfully!</div>
+
+    <script>
+        // Function to show confirmation message
+        function showConfirmationMessage() {
+            const confirmationMsg = document.getElementById('confirmation-msg');
+            confirmationMsg.style.display = 'block';
+            setTimeout(() => {
+                confirmationMsg.style.display = 'none';
+                window.location.href = "{{ url_for('index') }}";
+            }, 400); 
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const postForm = document.getElementById('post-form');
+            const submitButton = document.getElementById('submit-button');
+            
+
+            function checkInputs() {
+                const titleValue = document.getElementById('title').value.trim();
+                const contentValue = document.getElementById('content').value.trim();
+                submitButton.disabled = titleValue === '' || contentValue === '';
+            }
+
+            postForm.addEventListener('input', checkInputs);
+
+            postForm.addEventListener('submit', function(event) {
+                event.preventDefault(); 
+                const formData = new FormData(postForm);
+                fetch(postForm.action, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (response.ok) {
+                        showConfirmationMessage();
+                        postForm.reset(); 
+                        submitButton.disabled = true;
+                    } else {
+                        alert('Error creating post. Please try again.'); 
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An unexpected error occurred. Please try again later.'); 
+                });
+            });
+        });
+
+        // Function to format text (bold, italic, underline)
+        function formatText(style) {
+            const contentTextarea = document.getElementById('content');
+            const selectionStart = contentTextarea.selectionStart;
+            const selectionEnd = contentTextarea.selectionEnd;
+            const selectedText = contentTextarea.value.substring(selectionStart, selectionEnd);
+
+            let formattedText = '';
+            switch (style) {
+                case 'bold':
+                    formattedText = `<b>${selectedText}</b>`;
+                    break;
+                case 'italic':
+                    formattedText = `<i>${selectedText}</i>`;
+                    break;
+                case 'underline':
+                    formattedText = `<u>${selectedText}</u>`;
+                    break;
+            }
+
+            const newText = contentTextarea.value.substring(0, selectionStart) + formattedText + contentTextarea.value.substring(selectionEnd);
+            contentTextarea.value = newText;
+        }
+    </script>
+</body>
+</html>
