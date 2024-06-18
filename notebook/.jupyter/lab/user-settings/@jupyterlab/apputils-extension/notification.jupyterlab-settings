@@ -1,0 +1,10 @@
+{
+    // Notifications
+    // @jupyterlab/apputils-extension:notification
+    // Notifications settings.
+    // *******************************************
+
+    // Fetch official Jupyter news
+    // Whether to fetch news from Jupyter news feed. If `true`, it will make a request to a website.
+    "fetchNews": "true"
+}
