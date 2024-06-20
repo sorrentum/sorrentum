@@ -1,0 +1,24 @@
+version: '3'
+
+services:
+  amq:
+    image: rmohr/activemq
+    container_name: amq
+    ports:
+      - "61613:61613" 
+      - "8161:8161"  
+    volumes:
+      - ./activemq.xml:/opt/activemq/conf/activemq.xml
+
+  amq-pub-sub:
+    build: .
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./publisher.ipynb:/app/publisher.ipynb
+      - ./subscribers.ipynb:/app/subscribers.ipynb
+      - ./news.py:/app/news.py
+      - ./weather.py:/app/weather.py
+    command: jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root publisher.ipynb subscribers.ipynb
+    depends_on:
+      - amq
