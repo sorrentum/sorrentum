@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  flask:
+    build: ./605_Project # Path to the Flask app directory
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./605_Project:/app
+    environment:
+      - FLASK_APP=main.py
+      - FLASK_ENV=development
+      - MYSQL_HOST=localhost
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=allenmathews99
+      - MYSQL_DB=pharmacy_db
+
+
+
+  react:
+    build: ./restful_flask_orm_ui
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./restful_flask_orm_ui:/app
+    command: npm start

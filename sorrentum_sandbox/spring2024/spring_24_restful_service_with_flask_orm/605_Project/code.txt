@@ -1,0 +1,643 @@
+#app.py
+
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+from routes import *
+
+app = Flask(__name__)
+
+# Configure your Flask app to use the database
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:allenmathews99@localhost/pharmacy_db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Initialize SQLAlchemy with the Flask app
+db = SQLAlchemy(app)
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+#main.py
+from routes import *
+from app import app
+
+# Register the blueprints
+app.register_blueprint(catalog_bp, url_prefix='/api')
+app.register_blueprint(manufacturer_bp, url_prefix='/api')
+app.register_blueprint(doctor_bp, url_prefix='/api')
+app.register_blueprint(customer_bp, url_prefix='/api')
+app.register_blueprint(product_bp, url_prefix='/api')
+app.register_blueprint(pharmacist_bp, url_prefix='/api')
+app.register_blueprint(orders_bp, url_prefix='/api')
+app.register_blueprint(shipment_bp, url_prefix='/api')
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+#routes.py
+
+from flask import jsonify, request, Blueprint
+from app import db,app
+from model import *
+
+# Create a blueprint for routes
+catalog_bp = Blueprint('catalog', __name__)
+manufacturer_bp = Blueprint('manufacturer', __name__)
+doctor_bp = Blueprint('doctor',__name__)
+customer_bp = Blueprint('customer',__name__)
+product_bp = Blueprint('product', __name__)
+pharmacist_bp = Blueprint('pharmacist', __name__)
+orders_bp = Blueprint('orders', __name__)
+shipment_bp = Blueprint('shipment', __name__)
+
+#Catalog endpoints
+@app.route('/catalogs', methods=['GET'])
+def get_catalogs():
+    catalogs = Catalog.query.all()
+    return jsonify({'catalogs': [{'id': catalog.id, 'name': catalog.name, 'description': catalog.description} for catalog in catalogs]})
+
+@app.route('/catalogs/<int:id>', methods=['GET'])
+def get_catalog(id):
+    catalog = Catalog.query.get_or_404(id)
+    return jsonify({'id': catalog.id, 'name': catalog.name, 'description': catalog.description})
+
+@app.route('/catalogs', methods=['POST'])
+def create_catalog():
+    data = request.get_json()
+    new_catalog = Catalog(name=data['name'], description=data['description'])
+    db.session.add(new_catalog)
+    db.session.commit()
+    return jsonify({'message': 'Catalog created successfully'}), 201
+
+@app.route('/catalogs/<int:id>', methods=['PUT'])
+def update_catalog(id):
+    catalog = Catalog.query.get_or_404(id)
+    data = request.get_json()
+    catalog.name = data['name']
+    catalog.description = data['description']
+    db.session.commit()
+    return jsonify({'message': 'Catalog updated successfully'})
+
+@app.route('/catalogs/<int:id>', methods=['DELETE'])
+def delete_catalog(id):
+    catalog = Catalog.query.get_or_404(id)
+    db.session.delete(catalog)
+    db.session.commit()
+    return jsonify({'message': 'Catalog deleted successfully'})
+
+#Manufacturer endpoints
+@app.route('/manufacturers', methods=['GET'])
+def get_manufacturers():
+    manufacturers = Manufacturer.query.all()
+    return jsonify({'manufacturers': [{'id': manufacturer.id, 'name': manufacturer.name, 'email': manufacturer.email, 'phone' : manufacturer.phone, 'address': manufacturer.address, 'status' : manufacturer.status} for manufacturer in manufacturers]})
+
+@app.route('/manufacturers/<int:id>', methods=['GET'])
+def get_manufacturer(id):
+    manufacturer = Manufacturer.query.get_or_404(id)
+    return jsonify({'id': manufacturer.id, 'name': manufacturer.name, 'email': manufacturer.email, 'phone' : manufacturer.phone, 'address': manufacturer.address, 'status' : manufacturer.status})
+
+@app.route('/manufacturers', methods=['POST'])
+def create_manufacturer():
+    data = request.get_json()
+    new_manufacturer = Manufacturer(name=data['name'], email=data['email'], phone=data['phone'], address=data['address'], status=data['status'])
+    db.session.add(new_manufacturer)
+    db.session.commit()
+    return jsonify({'message': 'Manufacturer created successfully'}), 201
+
+@app.route('/manufacturers/<int:id>', methods=['PUT'])
+def update_manufacturer(id):
+    manufacturer = Manufacturer.query.get_or_404(id)
+    data = request.get_json()
+    manufacturer.name = data['name']
+    manufacturer.email = data['email']
+    manufacturer.phone = data['phone']
+    manufacturer.address = data['address']
+    manufacturer.status = data['status']
+    db.session.commit()
+    return jsonify({'message': 'Manufacturer updated successfully'})
+
+@app.route('/manufacturers/<int:id>', methods=['DELETE'])
+def delete_manufacturer(id):
+    manufacturer = Manufacturer.query.get_or_404(id)
+    db.session.delete(manufacturer)
+    db.session.commit()
+    return jsonify({'message': 'Manufacturer deleted successfully'})
+
+#Doctor endpoints
+@app.route('/doctors', methods=['GET'])
+def get_doctors():
+    doctors = Doctor.query.all()
+    return jsonify({'doctors': [{'id': doctor.id, 'name': doctor.name, 'specialization': doctor.specialization,'age' : doctor.age, 'phone' : doctor.phone, 'email' : doctor.email, 'address': doctor.address, 'status' : doctor.status} for doctor in doctors]})
+
+@app.route('/doctors/<int:id>', methods=['GET'])
+def get_doctor(id):
+    doctor = Doctor.query.get_or_404(id)
+    return jsonify({'id': doctor.id, 'name': doctor.name, 'specialization': doctor.specialization,'age' : doctor.age, 'phone' : doctor.phone, 'email' : doctor.email, 'address': doctor.address, 'status' : doctor.status})
+
+@app.route('/doctors', methods=['POST'])
+def create_doctor():
+    data = request.get_json()
+    new_doctor = Doctor(name=data['name'], specialization=data['specialization'], age=data['age'],  phone=data['phone'], email=data['email'], address=data['address'], status=data['status'])
+    db.session.add(new_doctor)
+    db.session.commit()
+    return jsonify({'message': 'Doctor created successfully'}), 201
+
+@app.route('/doctors/<int:id>', methods=['PUT'])
+def update_doctor(id):
+    doctor = Doctor.query.get_or_404(id)
+    data = request.get_json()
+    doctor.name = data['name']
+    doctor.age = data['age']
+    doctor.specialization = data['specialization']
+    doctor.email = data['email']
+    doctor.phone = data['phone']
+    doctor.address = data['address']
+    doctor.status = data['status']
+    db.session.commit()
+    return jsonify({'message': 'Doctor updated successfully'})
+
+@app.route('/doctors/<int:id>', methods=['DELETE'])
+def delete_doctor(id):
+    doctor = Doctor.query.get_or_404(id)
+    db.session.delete(doctor)
+    db.session.commit()
+    return jsonify({'message': 'Doctor deleted successfully'})
+
+#Customer endpoints
+@app.route('/customers', methods=['GET'])
+def get_customers():
+    customers = Customer.query.all()
+    return jsonify({'customers': [{'id': customer.id, 'name': customer.name,'age' : customer.age, 'phone' : customer.phone, 'email' : customer.email, 'address': customer.address, 'gender' : customer.status} for customer in customers]})
+
+@app.route('/customers/<int:id>', methods=['GET'])
+def get_customer(id):
+    customer = Customer.query.get_or_404(id)
+    return jsonify({'id': customer.id, 'name': customer.name,'age' : customer.age, 'phone' : customer.phone, 'email' : customer.email, 'address': customer.address, 'gender' : customer.status})
+
+@app.route('/customers', methods=['POST'])
+def create_customer():
+    data = request.get_json()
+    new_customer = Doctor(name=data['name'], age=data['age'], phone=data['phone'], email=data['email'], address=data['address'], gender=data['gender'])
+    db.session.add(new_customer)
+    db.session.commit()
+    return jsonify({'message': 'Customer created successfully'}), 201
+
+@app.route('/customers/<int:id>', methods=['PUT'])
+def update_customer(id):
+    customer = Customer.query.get_or_404(id)
+    data = request.get_json()
+    customer.name = data['name']
+    customer.age = data['age']
+    customer.email = data['email']
+    customer.phone = data['phone']
+    customer.address = data['address']
+    customer.gender = data['gender']
+    db.session.commit()
+    return jsonify({'message': 'Customer updated successfully'})
+
+@app.route('/customers/<int:id>', methods=['DELETE'])
+def delete_customer(id):
+    customer = Customer.query.get_or_404(id)
+    db.session.delete(customer)
+    db.session.commit()
+    return jsonify({'message': 'Customer deleted successfully'})
+
+#Product endpoints
+#check it again
+@product_bp.route('/products', methods=['GET'])
+def get_products():
+    products = Product.query.all()
+    return jsonify({'products': [{'id': product.id, 'name': product.name, 'product_use': product.product_use, 'count': product.count, 'price': float(product.price), 'expiry': product.expiry, 'catalog_name': product.catalog_name, 'manufacturer_name': product.manufacturer_name} for product in products]})
+
+@product_bp.route('/products/<int:id>', methods=['GET'])
+def get_product(id):
+    product = Product.query.get_or_404(id)
+    return jsonify({'id': product.id,
+                    'name': product.name,
+                    'product_use': product.product_use,
+                    'count': product.count,
+                    'price': float(product.price),
+                    'expiry': product.expiry,
+                    'catalog_name': product.catalog_name,
+                    'manufacturer_name': product.manufacturer_name})
+
+@product_bp.route('/products', methods=['POST'])
+def create_product():
+    data = request.get_json()
+    catalog = Catalog.query.filter_by(catalog_id=data['catalog_id']).first()
+    if not catalog:
+        return jsonify({'error': 'Catalog not found'}), 404
+
+    manufacturer = Manufacturer.query.filter_by(manufacturer_id=data['manufacturer_id']).first()
+    if not manufacturer:
+        return jsonify({'error': 'Manufacturer not found'}), 404
+
+    new_product = Product(name=data['name'],
+                          product_use=data['product_use'],
+                          count=data['count'],
+                          price=data['price'],
+                          expiry=data['expiry'],
+                          catalog_name=catalog.name,
+                          manufacturer_name=manufacturer.name,
+                          catalog_id=data['catalog_id'],
+                          manufacturer_id=data['manufacturer_id'])
+    db.session.add(new_product)
+    db.session.commit()
+    return jsonify({'message': 'Product created successfully', 'id': new_product.id}), 201
+
+@product_bp.route('/products/<int:id>', methods=['PUT'])
+def update_product(id):
+    product = Product.query.get_or_404(id)
+    data = request.get_json()
+
+    catalog = Catalog.query.filter_by(catalog_id=data['catalog_id']).first()
+    if not catalog:
+        return jsonify({'error': 'Catalog not found'}), 404
+
+    manufacturer = Manufacturer.query.filter_by(manufacturer_id=data['manufacturer_id']).first()
+    if not manufacturer:
+        return jsonify({'error': 'Manufacturer not found'}), 404
+
+    product.name = data['name']
+    product.product_use = data['product_use']
+    product.count = data['count']
+    product.price = data['price']
+    product.expiry = data['expiry']
+    product.catalog_name = catalog.name
+    product.manufacturer_name = manufacturer.name
+    product.catalog_id = data['catalog_id']
+    product.manufacturer_id = data['manufacturer_id']
+
+    db.session.commit()
+    return jsonify({'message': 'Product updated successfully'})
+
+@product_bp.route('/products/<int:id>', methods=['DELETE'])
+def delete_product(id):
+    product = Product.query.get_or_404(id)
+    db.session.delete(product)
+    db.session.commit()
+    return jsonify({'message': 'Product deleted successfully'})
+
+#Pharmacist endpoints
+@pharmacist_bp.route('/pharmacists', methods=['GET'])
+def get_pharmacists():
+    pharmacists = Pharmacist.query.all()
+    return jsonify({'pharmacists': [{'id': pharmacist.id,
+                                     'name': pharmacist.name,
+                                     'status': pharmacist.status} for pharmacist in pharmacists]})
+
+@pharmacist_bp.route('/pharmacists/<int:id>', methods=['GET'])
+def get_pharmacist(pharmacist_id):
+    pharmacist = Pharmacist.query.get_or_404(pharmacist_id)
+    return jsonify({'id': pharmacist.id,
+                    'name': pharmacist.name,
+                    'status': pharmacist.status})
+
+@pharmacist_bp.route('/pharmacists', methods=['POST'])
+def create_pharmacist():
+    data = request.get_json()
+    new_pharmacist = Pharmacist(name=data['name'],
+                                password=data['password'],
+                                status=data['status'])
+    db.session.add(new_pharmacist)
+    db.session.commit()
+    return jsonify({'message': 'Pharmacist created successfully', 'id': new_pharmacist.id}), 201
+
+@pharmacist_bp.route('/pharmacists/<int:id>', methods=['PUT'])
+def update_pharmacist(id):
+    pharmacist = Pharmacist.query.get_or_404(id)
+    data = request.get_json()
+    pharmacist.name = data['name']
+    pharmacist.password = data['password']
+    pharmacist.status = data['status']
+    db.session.commit()
+    return jsonify({'message': 'Pharmacist updated successfully'})
+
+@pharmacist_bp.route('/pharmacists/<int:id>', methods=['DELETE'])
+def delete_pharmacist(id):
+    pharmacist = Pharmacist.query.get_or_404(id)
+    db.session.delete(pharmacist)
+    db.session.commit()
+    return jsonify({'message': 'Pharmacist deleted successfully'})
+
+#Order endpoints
+#check it again
+@orders_bp.route('/orders', methods=['GET'])
+def get_orders():
+    orders = Orders.query.all()
+    return jsonify({'orders': [{'id': order.id,
+                                'time': order.time,
+                                'product_ids': order.product_ids.split(','),
+                                'product_names': order.product_names.split(','),
+                                'product_counts': order.product_counts.split(','),
+                                'total': str(order.total),
+                                'payment_method': order.payment_method,
+                                'status': order.status,
+                                'customer_name': order.customer_name,
+                                'doctor_name': order.doctor_name,
+                                'pharmacist_id': order.pharmacist_id,
+                                'customer_id': order.customer_id,
+                                'doctor_id': order.doctor_id,
+                                'products': [{'id': product.id,
+                                              'name': product.name,
+                                              'description': product.description,
+                                              'price': str(product.price)} for product in order.products]} for order in
+                               orders]})
+
+
+@orders_bp.route('/orders/<int:id>', methods=['GET'])
+def get_order(id):
+    order = Orders.query.get_or_404(id)
+    return jsonify({'id': order.id,
+                    'time': order.time.strftime("%Y-%m-%d %H:%M:%S"),
+                    'product_ids': order.product_ids.split(','),
+                    'product_names': order.product_names.split(','),
+                    'product_counts': order.product_counts.split(','),
+                    'total': str(order.total),
+                    'payment_method': order.payment_method,
+                    'status': order.status,
+                    'customer_name': order.customer_name,
+                    'doctor_name': order.doctor_name,
+                    'pharmacist_id': order.pharmacist_id,
+                    'customer_id': order.customer_id,
+                    'doctor_id': order.doctor_id,
+                    'products': [{'id': product.id,
+                                  'name': product.name,
+                                  'description': product.description,
+                                  'price': str(product.price)} for product in order.products]})
+
+
+@orders_bp.route('/orders', methods=['POST'])
+def create_order():
+    data = request.get_json()
+    pharmacist_id = data['pharmacist_id']
+    customer_id = data['customer_id']
+    doctor_id = data['doctor_id']
+    products = data['products']
+
+    # Retrieve Pharmacist, Customer, and Doctor objects
+    pharmacist = Pharmacist.query.get_or_404(pharmacist_id)
+    customer = Customer.query.get_or_404(customer_id)
+    doctor = Doctor.query.get_or_404(doctor_id)
+
+    # Create order
+    new_order = Orders(time=data['time'],
+                      product_ids=','.join([str(product['id']) for product in products]),
+                      product_names=','.join([product['name'] for product in products]),
+                      product_counts=','.join([str(product['count']) for product in products]),
+                      total=data['total'],
+                      payment_method=data['payment_method'],
+                      status=data['status'],
+                      customer_name=customer.name,
+                      doctor_name=doctor.name,
+                      pharmacist_id=pharmacist.id,
+                      customer_id=customer.id,
+                      doctor_id=doctor.id)
+
+    # Add products to the order
+    for product in products:
+        product_obj = Product.query.get_or_404(product['id'])
+        new_order.products.append(product_obj)
+
+    db.session.add(new_order)
+    db.session.commit()
+    return jsonify({'message': 'Order created successfully', 'id': new_order.id}), 201
+
+
+@orders_bp.route('/orders/<int:id>', methods=['PUT'])
+def update_order(order_id):
+    order = Orders.query.get_or_404(order_id)
+    data = request.get_json()
+    pharmacist_id = data['pharmacist_id']
+    customer_id = data['customer_id']
+    doctor_id = data['doctor_id']
+    products = data['products']
+
+    # Retrieve Pharmacist, Customer, and Doctor objects
+    pharmacist = Pharmacist.query.get_or_404(pharmacist_id)
+    customer = Customer.query.get_or_404(customer_id)
+    doctor = Doctor.query.get_or_404(doctor_id)
+
+    # Update order
+    order.time = data['time']
+    order.product_ids = ','.join([str(product['id']) for product in products])
+    order.product_names = ','.join([product['name'] for product in products])
+    order.product_counts = ','.join([str(product['count']) for product in products])
+    order.total = data['total']
+    order.payment_method = data['payment_method']
+    order.status = data['status']
+    order.customer_name = customer.customer_name
+    order.doctor_name = doctor.doctor_name
+    order.pharmacist_id = pharmacist_id
+    order.customer_id = customer_id
+    order.doctor_id = doctor_id
+
+    # Clear existing products and add updated products
+    order.products.clear()
+    for product in products:
+        product_obj = Product.query.get_or_404(product['id'])
+        order.products.append(product_obj)
+
+    db.session.commit()
+    return jsonify({'message': 'Order updated successfully'})
+
+
+@orders_bp.route('/orders/<int:id>', methods=['DELETE'])
+def delete_order(order_id):
+    order = Orders.query.get_or_404(id)
+    db.session.delete(order)
+    db.session.commit()
+    return jsonify({'message': 'Order deleted successfully'})
+
+#Shipment endpoints
+#check it again
+@shipment_bp.route('/shipments', methods=['GET'])
+def get_shipments():
+    shipments = Shipment.query.all()
+    return jsonify({'shipments': [{'id': shipment.id,
+                                   'dispatch_date': shipment.dispatch_date,
+                                   'delivery_date': shipment.delivery_date,
+                                   'status': shipment.status,
+                                   'order_id': shipment.order_id,
+                                   'order_time': shipment.order_time} for shipment in shipments]})
+
+@shipment_bp.route('/shipments/<int:id>', methods=['GET'])
+def get_shipment(id):
+    shipment = Shipment.query.get_or_404(id)
+    return jsonify({'id': shipment.id,
+                    'dispatch_date': shipment.dispatch_date,
+                    'delivery_date': shipment.delivery_date,
+                    'status': shipment.status,
+                    'order_id': shipment.order_id,
+                    'order_time': shipment.order_time})
+
+@shipment_bp.route('/shipments', methods=['POST'])
+def create_shipment():
+    data = request.get_json()
+    new_shipment = Shipment(dispatch_date=data['dispatch_date'],
+                            delivery_date=data['delivery_date'],
+                            status=data['status'],
+                            order_id=data['order_id'],
+                            order_time=data['order_time'])
+    db.session.add(new_shipment)
+    db.session.commit()
+    return jsonify({'message': 'Shipment created successfully', 'id': new_shipment.id}), 201
+
+@shipment_bp.route('/shipments/<int:id>', methods=['PUT'])
+def update_shipment(id):
+    shipment = Shipment.query.get_or_404(id)
+    data = request.get_json()
+    shipment.dispatch_date = data['dispatch_date']
+    shipment.delivery_date = data['delivery_date']
+    shipment.status = data['status']
+    shipment.order_id = data['order_id']
+    shipment.order_time = data['order_time']
+    db.session.commit()
+    return jsonify({'message': 'Shipment updated successfully'})
+
+@shipment_bp.route('/shipments/<int:id>', methods=['DELETE'])
+def delete_shipment(id):
+    shipment = Shipment.query.get_or_404(id)
+    db.session.delete(shipment)
+    db.session.commit()
+    return jsonify({'message': 'Shipment deleted successfully'})
+
+#model.py:
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import reconstructor
+from app import db
+db = SQLAlchemy()
+class Catalog(db.Model):
+    __tablename__ = 'catalog'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text)
+    #products = db.relationship('Product', backref='catalog', lazy=True)
+
+class Manufacturer(db.Model):
+    __tablename__ = 'manufacturer'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(255))
+    phone = db.Column(db.String(20))
+    address = db.Column(db.String(255))
+    status = db.Column(db.String(50))
+    #products = db.relationship('Product', backref='manufacturer', lazy=True)
+
+class Doctor(db.Model):
+    __tablename__ = 'doctor'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(100), nullable=False)
+    specialization = db.Column(db.String(50))
+    age = db.Column(db.Integer)
+    phone = db.Column(db.String(20))
+    email = db.Column(db.String(255))
+    address = db.Column(db.String(255))
+    status = db.Column(db.String(50))
+    #orders = db.relationship('Orders', backref='doctor', lazy=True)
+
+class Customer(db.Model):
+    __tablename__ = 'customer'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(100), nullable=False)
+    age = db.Column(db.Integer)
+    phone = db.Column(db.String(20))
+    email = db.Column(db.String(255))
+    address = db.Column(db.String(255))
+    gender = db.Column(db.String(20))
+    #orders = db.relationship('Orders', backref='customer', lazy=True)
+
+class Product(db.Model):
+    __tablename__ = 'product'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(100), nullable=False)
+    product_use = db.Column(db.Text)
+    count = db.Column(db.Integer, nullable=False)
+    price = db.Column(db.Numeric, nullable=False)
+    expiry = db.Column(db.Date)
+    catalog_name = db.Column(db.String(100), nullable=False)
+    manufacturer_name = db.Column(db.String(100), nullable=False)
+    catalog_id = db.Column(db.Integer, db.ForeignKey('catalog.id'), nullable=False)
+    manufacturer_id = db.Column(db.Integer, db.ForeignKey('manufacturer.id'), nullable=False)
+
+
+class Pharmacist(db.Model):
+    __tablename__ = 'pharmacist'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(100), nullable=False)
+    password = db.Column(db.String(100), nullable=False)
+    status = db.Column(db.String(50))
+    #orders = db.relationship('Orders', backref='pharmacist', lazy=True)
+
+class Orders(db.Model):
+    __tablename__ = 'orders'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    time = db.Column(db.DateTime)
+    product_ids =  db.Column(db.String(1000), nullable=False)
+    product_names = db.Column(db.String(1000), nullable=False)
+    product_counts =  db.Column(db.String(1000), nullable=False)
+    total = db.Column(db.Numeric, nullable=False)
+    payment_method = db.Column(db.String(20))
+    status = db.Column(db.String(20))
+    customer_name = db.Column(db.String(100), nullable=False)
+    doctor_name = db.Column(db.String(100), nullable=False)
+
+    pharmacist_id = db.Column(db.Integer, db.ForeignKey('pharmacist.id'), unique=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), unique=True)
+    doctor_id = db.Column(db.Integer, db.ForeignKey('doctor.id'), unique=True)
+    #products = db.relationship('Product', backref='order', lazy=True)
+
+    @reconstructor
+    def init_on_load(self):
+        self.product_ids = self._get_product_ids()
+        self.product_names = self._get_product_names()
+        self.product_counts = self._get_product_counts()
+
+    def _get_product_ids(self):
+        return ','.join(str(product.id) for product in self.products)
+
+    def _get_product_names(self):
+        return ','.join(product.name for product in self.products)
+
+    def _get_product_counts(self):
+        return ','.join(str(product.count) for product in self.products)
+
+    def set_product_counts(self, counts):
+        # Validate and set the product counts
+        for count in counts:
+            if count < 0:
+                raise ValueError("Product count must be non-negative.")
+        self.product_counts = ','.join(str(count) for count in counts)
+
+    def validate_product_counts(self):
+        # Validate that product counts are less than or equal to product counts for each associated product
+        order_product_counts = [int(count) for count in self.product_counts.split(',')]
+        for product, count in zip(self.products, order_product_counts):
+            if count > product.count:
+                raise ValueError(f"Order product count for {product.name} exceeds available stock.")
+
+    def before_insert(self):
+        # Validate product counts before inserting
+        self.validate_product_counts()
+
+    def before_update(self):
+        # Validate product counts before updating
+        self.validate_product_counts()
+
+    """
+    In this modification:
+
+    Added methods set_product_counts and validate_product_counts to validate and set the order_product_counts field.
+    The set_product_counts method takes a list of product counts as input, validates them, and sets the order_product_counts field accordingly.
+    The validate_product_counts method validates that each product count is less than or equal to the product_count for the associated product.
+    Added before_insert and before_update methods to validate product counts before inserting or updating the Order object in the database.
+    """
+
+class Shipment(db.Model):
+    __tablename__ = 'shipment'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    dispatch_date = db.Column(db.DateTime)
+    delivery_date = db.Column(db.Date)
+    status = db.Column(db.String(20))
+    order_id = db.Column(db.Integer, db.ForeignKey('orders.id'), nullable=False)
+    order_time = db.Column(db.DateTime)
