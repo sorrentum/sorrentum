@@ -228,3 +228,42 @@ final_df_with_dixon = calculate_match_outcome_and_probabilities(glm_poisson_pred
 rasoprut.evaluate_model_predictions(
         final_df_with_dixon["actual_outcome"], final_df_with_dixon["predicted_outcome"]
     )
+
+
+def calculate_rps(df: pd.DataFrame) -> float:
+    """
+    Calculate the Rank Probability Score (RPS) for three-way outcome predictions in a DataFrame.
+
+    :param df: DataFrame containing the columns:
+                       'prob_home_win', 'prob_draw', 'prob_away_win',
+                       'actual_outcome'.
+    :return: The Rank Probability Score (RPS) for the entire model.
+    """
+    # Initialize RPS sum.
+    rps_sum = 0
+    M = len(df)
+    # Iterate over each row in the DataFrame.
+    for index, row in df.iterrows():
+        # Extract predicted probabilities
+        probs = np.array([row['prob_home_win'], row['prob_draw']])
+        # Calculate cumulative predicted probabilities.
+        cum_probs = probs.cumsum()
+        # Determine actual outcomes.
+        if row['actual_outcome'] == 'home_win':
+            actuals = np.array([1, 0])
+        elif row['actual_outcome'] == 'draw':
+            actuals = np.array([0, 1])
+        else:
+            actuals = np.array([0, 0])
+        # Calculate cumulative actual outcomes.
+        cum_actuals = actuals.cumsum()
+        # Calculate RPS for the current match.
+        rps = (np.sum((cum_probs - cum_actuals) ** 2)) / 2
+        # Add the RPS of the current match to the total RPS sum.
+        rps_sum += rps
+    # Average RPS over all matches.
+    rps_avg = rps_sum / M
+    _LOG.info("RPS value for the model: %.4f", rps_avg)
+    return rps_avg
+
+rps_avg = calculate_rps(glm_poisson_prediction_df)
