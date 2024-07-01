@@ -40,7 +40,7 @@ def get_limit_order_prices(
     ffill_limit = 3
     tick_decimals = 2
     _LOG.debug("data=\n%s", hpandas.df_to_str(data, num_rows=None))
-    limit_order_prices = cfinexec.generate_limit_order_price(
+    limit_order_prices = cfinexec._generate_limit_order_price(
         data,
         bid_col,
         ask_col,

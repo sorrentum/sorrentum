@@ -557,3 +557,107 @@ class TestForecastEvaluatorFromPrices1(hunitest.TestCase):
 2022-01-03 09:55:00-05:00    -278.06      9.64e+05  -200690.59  1.00e+06 -236802.17
 2022-01-03 10:00:00-05:00    1385.12      1.21e+05  -120770.11  9.98e+05 -356187.17"""
         self.assert_equal(stats_df_str, expected_stats_df_str, fuzzy_match=True)
+
+    def test_apply_trimming_no_optional(self) -> None:
+        """
+        Test with no optional columns.
+        """
+        # Generate test data.
+        data = self.get_data(
+            pd.Timestamp("2022-01-03 09:30:00", tz="America/New_York"),
+            pd.Timestamp("2022-01-03 10:00:00", tz="America/New_York"),
+            asset_ids=[101],
+        )
+        # Apply trimming.
+        forecast_evaluator = dtfmfefrpr.ForecastEvaluatorFromPrices(
+            price_col="price",
+            volatility_col="volatility",
+            prediction_col="prediction",
+        )
+        precision = 2
+        # Process data.
+        actual = forecast_evaluator._apply_trimming(data)
+        actual = hpandas.df_to_str(actual, num_rows=None, precision=precision)
+        expected = r"""
+                            price volatility prediction
+                              101        101        101
+2022-01-03 09:40:00-05:00  998.17   7.25e-04   8.58e-04
+2022-01-03 09:45:00-05:00  997.39   7.57e-04   4.75e-04
+2022-01-03 09:50:00-05:00  997.66   6.02e-04  -4.51e-04
+2022-01-03 09:55:00-05:00  997.41   5.07e-04  -7.55e-04
+2022-01-03 10:00:00-05:00  997.54   4.27e-04  -8.15e-04
+"""
+        self.assert_equal(actual, expected, fuzzy_match=True)
+
+    def test_apply_trimming_optional_col1(self) -> None:
+        """
+        Test with two unique optional columns.
+        """
+        # Generate test data.
+        data = self.get_data(
+            pd.Timestamp("2022-01-03 09:30:00", tz="America/New_York"),
+            pd.Timestamp("2022-01-03 10:00:00", tz="America/New_York"),
+            asset_ids=[101],
+        )
+        # Add optional columns with cloning the existing columns.
+        buy_price = pd.concat([data["price"]], keys=["buy_price"], axis=1)
+        sell_price = pd.concat([data["price"]], keys=["sell_price"], axis=1)
+        data = pd.concat([data, buy_price, sell_price], axis=1)
+        # Apply trimming.
+        forecast_evaluator = dtfmfefrpr.ForecastEvaluatorFromPrices(
+            price_col="price",
+            volatility_col="volatility",
+            prediction_col="prediction",
+            buy_price_col="buy_price",
+            sell_price_col="sell_price",
+        )
+        precision = 2
+        # Process data.
+        actual = forecast_evaluator._apply_trimming(data)
+        actual = hpandas.df_to_str(actual, num_rows=None, precision=precision)
+        expected = r"""
+                            price volatility prediction buy_price sell_price
+                              101        101        101       101        101
+2022-01-03 09:40:00-05:00  998.17   7.25e-04   8.58e-04    998.17     998.17
+2022-01-03 09:45:00-05:00  997.39   7.57e-04   4.75e-04    997.39     997.39
+2022-01-03 09:50:00-05:00  997.66   6.02e-04  -4.51e-04    997.66     997.66
+2022-01-03 09:55:00-05:00  997.41   5.07e-04  -7.55e-04    997.41     997.41
+2022-01-03 10:00:00-05:00  997.54   4.27e-04  -8.15e-04    997.54     997.54
+"""
+        self.assert_equal(actual, expected, fuzzy_match=True)
+
+    def test_apply_trimming_optional_col2(self) -> None:
+        """
+        Test with optional columns duplicating the existing columns.
+        """
+        # Generate test data.
+        data = self.get_data(
+            pd.Timestamp("2022-01-03 09:30:00", tz="America/New_York"),
+            pd.Timestamp("2022-01-03 10:00:00", tz="America/New_York"),
+            asset_ids=[101],
+        )
+        # Add optional columns with cloning the existing columns.
+        sell_price = pd.concat([data["price"]], keys=["sell_price"], axis=1)
+        data = pd.concat([data, sell_price], axis=1)
+        # Apply trimming.
+        forecast_evaluator = dtfmfefrpr.ForecastEvaluatorFromPrices(
+            price_col="price",
+            volatility_col="volatility",
+            prediction_col="prediction",
+            buy_price_col="prediction",
+            sell_price_col="sell_price",
+        )
+        precision = 2
+        # Process data.
+        actual = forecast_evaluator._apply_trimming(data)
+        actual = hpandas.df_to_str(actual, num_rows=None, precision=precision)
+        expected = r"""
+                            price volatility prediction sell_price
+                              101        101        101        101
+2022-01-03 09:40:00-05:00  998.17   7.25e-04   8.58e-04     998.17
+2022-01-03 09:45:00-05:00  997.39   7.57e-04   4.75e-04     997.39
+2022-01-03 09:50:00-05:00  997.66   6.02e-04  -4.51e-04     997.66
+2022-01-03 09:55:00-05:00  997.41   5.07e-04  -7.55e-04     997.41
+2022-01-03 10:00:00-05:00  997.54   4.27e-04  -8.15e-04     997.54
+"""
+        self.assert_equal(actual, expected, fuzzy_match=True)

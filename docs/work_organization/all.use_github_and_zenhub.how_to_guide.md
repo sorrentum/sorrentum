@@ -279,7 +279,7 @@
 - Labels are attributes of an issue (or PR), e.g., `good first issue`,
   `PR_for_reviewers`, `duplicate`, etc.
 - See the current list of labels and their descriptions are
-  [Sorrentum](https://github.com/sorrentum/sorrentum/labels) and
+  [KaizenFlow](https://github.com/kaizen-ai/kaizenflow/labels) and
   [cmamp](https://github.com/cryptokaizen/cmamp/labels)
   - The repos should always have labels in sync
 
@@ -554,7 +554,7 @@ stateDiagram
     in the format below. The report should contain only the files that were
     touched in a PR.
     - We have `run_coverage_report` invoke
-      - `TODO(*): Enable for Sorrentum and add usage examples.`
+      - `TODO(*): Enable for KaizenFlow and add usage examples.`
     - Maybe we can automate it somehow, e.g., with GH actions. But we need to
       start from something.
       ```

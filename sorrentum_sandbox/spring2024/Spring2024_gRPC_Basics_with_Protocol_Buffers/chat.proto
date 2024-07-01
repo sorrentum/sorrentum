@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+message User {
+    string user_id = 1;
+    string username = 2;
+}
+
+message ChatMessage {
+    User user = 1;
+    string message = 2;
+}
+
+message ChatRoom {
+    string room_id = 1;
+    repeated User users = 2;
+    repeated ChatMessage history = 3;
+}
+
+service ChatService {
+    rpc JoinChat (stream ChatMessage) returns (stream ChatMessage);
+    rpc JoinChatRoom (stream User) returns (stream ChatRoom);
+}

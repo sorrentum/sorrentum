@@ -437,8 +437,8 @@ def _wait_until(
         _LOG.warning(
             "curr_timestamp=%s, wait_until_timestamp=%s is in the future: "
             "continuing ",
-            wait_until_timestamp,
             curr_timestamp,
+            wait_until_timestamp,
         )
         time_in_secs = 0
     else:

@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import pprint
 import unittest.mock as umock
@@ -8,6 +9,7 @@ import pandas as pd
 import pytest
 
 import helpers.hasyncio as hasynci
+import helpers.htimer as htimer
 import oms.broker.ccxt.abstract_ccxt_broker as obcaccbr
 import oms.broker.ccxt.mock_ccxt_exchange as obcmccex
 import oms.broker.ccxt.test.ccxt_broker_test_case as obccbteca
@@ -152,6 +154,83 @@ class TestCcxtBroker(obccbteca.TestCcxtBroker_TestCase):
             )
         self.assert_equal(receipt, "")
         self.assert_equal(str(orders), "[]")
+
+    def test_skip_first_wave1(self) -> None:
+        """
+        Test that the method returns True when there is not enough time left to
+        complete the first wave of orders.
+        """
+        # Prepare inputs.
+        execution_start_timestamp = pd.Timestamp("2024-04-29 09:30:00+00:00")
+        execution_freq = pd.Timedelta("10S")
+        wave_start_time = pd.Timestamp("2024-04-29 09:30:07+00:00")
+        wave_id = 0
+        # Build broker.
+        broker = self._get_local_test_broker()
+        broker.market_data.get_wall_clock_time.return_value = pd.Timestamp(
+            "2024-04-29 09:30:07+00:00"
+        )
+        with htimer.TimedScope(logging.INFO, "async_retry_loop") as ts:
+            actual = asyncio.run(
+                broker._skip_first_wave(
+                    execution_start_timestamp,
+                    execution_freq,
+                    wave_start_time,
+                    wave_id,
+                )
+            )
+        # Check that the waiting time was correct.
+        self.assertEqual(round(ts.elapsed_time, 1), 3.0)
+        self.assertEqual(actual, True)
+
+    def test_skip_first_wave2(self) -> None:
+        """
+        Test that the method returns False when there is enough time left to
+        complete the first wave of orders.
+        """
+        # Prepare inputs.
+        execution_start_timestamp = pd.Timestamp("2024-04-29 09:30:00+00:00")
+        execution_freq = pd.Timedelta("10S")
+        wave_start_time = pd.Timestamp("2024-04-29 09:30:06+00:00")
+        wave_id = 0
+        # Build broker.
+        broker = self._get_local_test_broker()
+        broker.market_data.get_wall_clock_time.return_value = pd.Timestamp(
+            "2024-04-29 09:30:06+00:00"
+        )
+        actual = asyncio.run(
+            broker._skip_first_wave(
+                execution_start_timestamp,
+                execution_freq,
+                wave_start_time,
+                wave_id,
+            )
+        )
+        self.assertEqual(actual, False)
+
+    def test_skip_first_wave3(self) -> None:
+        """
+        Test that the method returns False when `wave_id` is not 0.
+        """
+        # Prepare inputs.
+        execution_start_timestamp = pd.Timestamp("2024-04-29 09:30:00+00:00")
+        execution_freq = pd.Timedelta("10S")
+        wave_start_time = pd.Timestamp("2024-04-29 09:30:01+00:00")
+        wave_id = 1
+        # Build broker.
+        broker = self._get_local_test_broker()
+        broker.market_data.get_wall_clock_time.return_value = pd.Timestamp(
+            "2024-04-29 09:30:01+00:00"
+        )
+        actual = asyncio.run(
+            broker._skip_first_wave(
+                execution_start_timestamp,
+                execution_freq,
+                wave_start_time,
+                wave_id,
+            )
+        )
+        self.assertEqual(actual, False)
 
     # //////////////////////////////////////////////////////////////////////////
 
@@ -481,7 +560,7 @@ class TestCcxtBroker_V2_UsingFakeExchange(obcctmetc.MockExchangeTestCase):
         '_submit_twap_child_order::child_order.submitted': Timestamp('2022-08-05 05:31:02-0400', tz='America/New_York'),
         '_submit_twap_child_order::get_open_positions.done': Timestamp('2022-08-05 05:31:00-0400', tz='America/New_York'),
         '_submit_twap_child_order::wave_id': 0,
-        '_submit_twap_orders::aligned_with_next_wave.end': Timestamp('2022-08-05 05:31:58-0400', tz='America/New_York')}}]
+        '_submit_twap_orders::aligned_with_next_wave.end': Timestamp('2022-08-05 05:31:55-0400', tz='America/New_York')}}]
         """
         actual_orders = pprint.pformat(orders)
         self.assert_equal(actual_orders, exp, fuzzy_match=True)
@@ -1200,7 +1279,7 @@ class TestCcxtBroker_V2_UsingFakeExchangeWithErrors(
         '_submit_twap_child_order::child_order.submitted': Timestamp('2022-08-05 05:31:04.500000-0400', tz='America/New_York'),
         '_submit_twap_child_order::get_open_positions.done': Timestamp('2022-08-05 05:31:00-0400', tz='America/New_York'),
         '_submit_twap_child_order::wave_id': 0,
-        '_submit_twap_orders::aligned_with_next_wave.end': Timestamp('2022-08-05 05:31:58-0400', tz='America/New_York')}}]
+        '_submit_twap_orders::aligned_with_next_wave.end': Timestamp('2022-08-05 05:31:55-0400', tz='America/New_York')}}]
         """
         submitted_expected_orders = r"""
         [Order:
@@ -1282,7 +1361,7 @@ class TestCcxtBroker_V2_UsingFakeExchangeWithErrors(
         '_submit_twap_child_order::child_order.submitted': Timestamp('2022-08-05 05:31:07-0400', tz='America/New_York'),
         '_submit_twap_child_order::get_open_positions.done': Timestamp('2022-08-05 05:31:00-0400', tz='America/New_York'),
         '_submit_twap_child_order::wave_id': 0,
-        '_submit_twap_orders::aligned_with_next_wave.end': Timestamp('2022-08-05 05:31:58-0400', tz='America/New_York')}}]
+        '_submit_twap_orders::aligned_with_next_wave.end': Timestamp('2022-08-05 05:31:55-0400', tz='America/New_York')}}]
         """
         submitted_expected_orders = r"""
         [Order:
@@ -1367,7 +1446,7 @@ class TestCcxtBroker_V2_UsingFakeExchangeWithErrors(
         '_submit_twap_child_order::child_order.submitted': Timestamp('2022-08-05 05:31:07.500000-0400', tz='America/New_York'),
         '_submit_twap_child_order::get_open_positions.done': Timestamp('2022-08-05 05:31:00-0400', tz='America/New_York'),
         '_submit_twap_child_order::wave_id': 0,
-        '_submit_twap_orders::aligned_with_next_wave.end': Timestamp('2022-08-05 05:31:58-0400', tz='America/New_York')}}]
+        '_submit_twap_orders::aligned_with_next_wave.end': Timestamp('2022-08-05 05:31:55-0400', tz='America/New_York')}}]
         """
         submitted_expected_orders = r"""
         [Order:
@@ -1452,7 +1531,7 @@ class TestCcxtBroker_V2_UsingFakeExchangeWithErrors(
         '_submit_twap_child_order::child_order.submitted': Timestamp('2022-08-05 05:31:07-0400', tz='America/New_York'),
         '_submit_twap_child_order::get_open_positions.done': Timestamp('2022-08-05 05:31:00-0400', tz='America/New_York'),
         '_submit_twap_child_order::wave_id': 0,
-        '_submit_twap_orders::aligned_with_next_wave.end': Timestamp('2022-08-05 05:31:58-0400', tz='America/New_York')}}]
+        '_submit_twap_orders::aligned_with_next_wave.end': Timestamp('2022-08-05 05:31:55-0400', tz='America/New_York')}}]
         """
         submitted_expected_orders = r"""
         [Order:
@@ -1539,7 +1618,7 @@ class TestCcxtBroker_V2_UsingFakeExchangeWithErrors(
         '_submit_twap_child_order::child_order.submitted': Timestamp('2022-08-05 05:31:07-0400', tz='America/New_York'),
         '_submit_twap_child_order::get_open_positions.done': Timestamp('2022-08-05 05:31:00-0400', tz='America/New_York'),
         '_submit_twap_child_order::wave_id': 0,
-        '_submit_twap_orders::aligned_with_next_wave.end': Timestamp('2022-08-05 05:31:58-0400', tz='America/New_York')}}]
+        '_submit_twap_orders::aligned_with_next_wave.end': Timestamp('2022-08-05 05:31:55-0400', tz='America/New_York')}}]
         """
         submitted_expected_orders = r"""
         [Order:
@@ -1747,6 +1826,72 @@ class TestCcxtBroker_UsingFakeExchangeWithDynamicScheduler(
         # Assert fills.
         exp = r"""
         [Fill: asset_id=1464553467 fill_id=1 timestamp=2022-08-05 09:32:02+00:00 num_shares=-10.559999999999999 price=31.0]
+        """
+        self._test_get_fills(broker, exp)
+        # Assert ccxt fills.
+        ccxt_fills = self._test_ccxt_fills(broker, orders, "test_ccxt_fills")
+        # Assert ccxt trades.
+        self._test_ccxt_trades(broker, ccxt_fills, "test_ccxt_trades")
+
+    # Mocking the wave completion time threshold to be greater than the
+    # execution frequency inorder to skip the first wave.
+    @umock.patch(
+        "oms.broker.ccxt.ccxt_broker._WAVE_COMPLETION_TIME_THRESHOLD", new=61
+    )
+    @umock.patch.object(
+        obcaccbr.AbstractCcxtBroker, "_build_asset_id_to_ccxt_symbol_mapping"
+    )
+    def test_submit_twap_orders_skipping_first_wave(
+        self,
+        mock_build_asset_id_to_ccxt_symbol_mapping: umock.MagicMock,
+    ) -> None:
+        """
+        Test case for submitting TWAP orders while skipping the first wave.
+        """
+        mock_build_asset_id_to_ccxt_symbol_mapping.return_value = {
+            6051632686: "APE/USDT:USDT",
+            1467591036: "BTC/USDT:USDT",
+            1464553467: "ETH/USDT:USDT",
+        }
+        creation_timestamp = pd.Timestamp("2022-08-05 09:29:55+00:00")
+        start_timestamp = pd.Timestamp("2022-08-05 09:30:00+00:00")
+        end_timestamp = pd.Timestamp("2022-08-05 09:33:00+00:00")
+        curr_num_shares = 12
+        asset_id = 1464553467
+        orders_str = "\n".join(
+            [
+                f"Order: order_id=1 creation_timestamp={creation_timestamp} asset_id={asset_id} type_=limit start_timestamp={start_timestamp} end_timestamp={end_timestamp} curr_num_shares={curr_num_shares} diff_num_shares=-{curr_num_shares} tz=UTC extra_params={{}}",
+            ]
+        )
+        # Get orders and positions.
+        orders = oordorde.orders_from_string(orders_str)
+        starting_positions = [
+            {
+                "info": {"positionAmt": curr_num_shares},
+                "symbol": "ETH/USDT:USDT",
+            },
+        ]
+        # We expect to have 3 wave of orders submission for 1 order.
+        fill_percents = [0, 0.5, 0.5]
+        # Run TWAP submission.
+        orders, broker = self._test_submit_twap_orders(
+            orders,
+            starting_positions,
+            fill_percents,
+            oliprcom.LimitPriceComputerUsingVolatility(0.5),
+            ochorquco.DynamicSchedulingChildOrderQuantityComputer(),
+            num_trades_per_order=2,
+        )
+        submitted_orders = broker._previous_parent_orders
+        actual_orders = pprint.pformat(orders)
+        self.check_string(actual_orders)
+        submitted_orders = pprint.pformat(submitted_orders)
+        self.check_string(
+            submitted_orders, tag="test_submitted_orders", fuzzy_match=True
+        )
+        # Assert fills.
+        exp = r"""
+        [Fill: asset_id=1464553467 fill_id=1 timestamp=2022-08-05 09:32:02+00:00 num_shares=-6.0 price=31.0]
         """
         self._test_get_fills(broker, exp)
         # Assert ccxt fills.

@@ -449,6 +449,21 @@ def convert_seconds_to_minutes(num_secs: int) -> int:
     return num_mins
 
 
+# TODO(Dan): Unit test.
+def convert_seconds_to_pandas_minutes(val: int) -> str:
+    """
+    Convert a number of seconds to its Pandas delay representation in minutes.
+
+    E.g. 300 -> '5T'
+
+    :param val: number of seconds to convert
+    :return: Pandas delay representation
+    """
+    res = convert_seconds_to_minutes(val)
+    res = f"{res}T"
+    return res
+
+
 def convert_minutes_to_seconds(num_minutes: int) -> int:
     """
     Convert minutes to seconds.
@@ -866,14 +881,21 @@ def convert_timestamp_to_unix_epoch(
 
 # TODO(Sameep): Reuse this function across the code base (`jackpy strftime`) when
 # it doesn't make the import graph too complicated.
-def timestamp_to_str(timestamp: pd.Timestamp) -> str:
+def timestamp_to_str(
+    timestamp: pd.Timestamp, *, include_msec: bool = False
+) -> str:
     """
     Convert timestamp to string.
 
     :param timestamp: timestamp to convert
+    :param include_msec: whether to include milliseconds e.g.
+        `20230727-11105712`
     :return: timestamp in string format e.g. `20230727-111057`.
     """
     hdbg.dassert_isinstance(timestamp, pd.Timestamp)
     # Convert timestamp to string.
-    timestamp_format = "%Y%m%d-%H%M%S"
-    return timestamp.strftime(timestamp_format)
+    if include_msec:
+        timestamp_str = timestamp.strftime("%Y%m%d_%H%M%S%f")[:-4]
+    else:
+        timestamp_str = timestamp.strftime("%Y%m%d_%H%M%S")
+    return timestamp_str

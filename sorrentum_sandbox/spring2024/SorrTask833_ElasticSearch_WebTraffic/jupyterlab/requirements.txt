@@ -1,0 +1,6 @@
+jupyterlab
+numpy
+pandas
+matplotlib
+elasticsearch
+seaborn

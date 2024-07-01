@@ -6,7 +6,7 @@ import im_v2.ccxt.utils as imv2ccuti
 _LOG = logging.getLogger(__name__)
 
 
-class TestUtils(hunitest.TestCase):
+class Test_convert_currency_pair_to_ccxt_format(hunitest.TestCase):
     def test1(self) -> None:
         currency_pair = "BTC_USDT"
         exchange = "binance"
@@ -66,7 +66,7 @@ class TestUtils(hunitest.TestCase):
         )
         expected = "BTC/USDT:USDT"
         self.assert_equal(actual, expected)
-    
+
     def test7(self) -> None:
         currency_pair = "BTCUSDT"
         exchange = "okx"
@@ -82,5 +82,53 @@ class TestUtils(hunitest.TestCase):
         The currency_pair 'BTCUSDT' does not match the format '{str1}_{str2}'.
         """
         self.assert_equal(actual_error, expected, fuzzy_match=True)
-        
 
+
+class Test_convert_full_symbol_to_binance_symbol(hunitest.TestCase):
+    def helper(self, full_symbol: str, expected: str) -> None:
+        """
+        Helper for the tests that raise an exception.
+        """
+        with self.assertRaises(AssertionError) as fail:
+            imv2ccuti.convert_full_symbol_to_binance_symbol(full_symbol)
+        actual_error = str(fail.exception)
+        self.assert_equal(actual_error, expected, fuzzy_match=True)
+
+    def test1(self) -> None:
+        full_symbol = "binance::AVAX_USDT"
+        actual = imv2ccuti.convert_full_symbol_to_binance_symbol(full_symbol)
+        expected = "AVAX/USDT:USDT"
+        self.assert_equal(actual, expected)
+
+    def test2(self) -> None:
+        full_symbol = "binance::1000LUNC_USDT"
+        actual = imv2ccuti.convert_full_symbol_to_binance_symbol(full_symbol)
+        expected = "1000LUNC/USDT:USDT"
+        self.assert_equal(actual, expected)
+
+    def test3(self) -> None:
+        full_symbol = "binance_1000LUNC_USDT"
+        expected = r"""
+        * Failed assertion *
+        'None' is not 'None'
+        The full_symbol 'binance_1000LUNC_USDT' does not match the format '{exchange}::{CURRENCY1}_{CURRENCY2}'.
+        """
+        self.helper(full_symbol, expected)
+
+    def test4(self) -> None:
+        full_symbol = "::AVAX_USDT"
+        expected = r"""
+        * Failed assertion *
+        'None' is not 'None'
+        The full_symbol '::AVAX_USDT' does not match the format '{exchange}::{CURRENCY1}_{CURRENCY2}'.
+        """
+        self.helper(full_symbol, expected)
+
+    def test5(self) -> None:
+        full_symbol = "binance::avax_usdt"
+        expected = r"""
+        * Failed assertion *
+        'None' is not 'None'
+        The full_symbol 'binance::avax_usdt' does not match the format '{exchange}::{CURRENCY1}_{CURRENCY2}'.
+        """
+        self.helper(full_symbol, expected)

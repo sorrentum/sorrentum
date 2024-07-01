@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Shortener</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">URL Shortener</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('index') }}">Home</a>
+                </li>
+                {% if 'user' in session %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('analytics') }}">Analytics</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                </li>
+                {% else %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('signup') }}">Sign Up</a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <h1 class="mb-4">URL Shortener</h1>
+        {% if 'user' in session %}
+        <form action="{{ url_for('shorten_url') }}" method="POST">
+            <div class="form-group">
+                <label for="long_url">Enter URL to shorten:</label>
+                <input type="url" class="form-control" id="long_url" name="long_url" placeholder="https://example.com" required>
+            </div>
+            <div class="form-group">
+                <label for="custom_alias">Custom Alias (Optional):</label>
+                <input type="text" class="form-control" id="custom_alias" name="custom_alias" placeholder="Custom Alias">
+            </div>
+            <div class="form-group">
+                <label for="expiration_days">Expiration Days (Optional):</label>
+                <input type="number" class="form-control" id="expiration_days" name="expiration_days" placeholder="Expiration Days" min="1" value="">
+            </div>
+            <button type="submit" class="btn btn-primary">Shorten URL</button>
+        </form>
+        {% else %}
+        <p>Please <a href="{{ url_for('login') }}">login</a> or <a href="{{ url_for('signup') }}">sign up</a> to shorten URLs.</p>
+        {% endif %}
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

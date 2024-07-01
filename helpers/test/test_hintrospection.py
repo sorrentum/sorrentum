@@ -3,7 +3,6 @@ import os
 from typing import Any, Callable
 
 import helpers.hdbg as hdbg
-import helpers.hgit as hgit
 import helpers.hintrospection as hintros
 import helpers.hpickle as hpickle
 import helpers.hstring as hstring
@@ -21,13 +20,31 @@ def hello() -> bool:
     return False
 
 
-class Hello:
+class _ClassPickleable:
+    """
+    Class with pickleable param values.
+    """
+
+    def __init__(self) -> None:
+        self._arg1 = 1
+        self._arg2 = ["2", 3]
+
     @staticmethod
     def say2(self) -> None:
         print("Hello")
 
     def say(self) -> None:
         print("Hello")
+
+
+class _ClassNonPickleable:
+    """
+    Class with non-pickleable param values.
+    """
+
+    def __init__(self) -> None:
+        self._arg1 = lambda x: x
+        self._arg2 = 2
 
 
 class Test_is_pickleable1(hunitest.TestCase):
@@ -122,8 +139,8 @@ class Test_is_pickleable1(hunitest.TestCase):
 
     def test_method1(self) -> None:
         # A class method but unbound to an object.
-        func = Hello.say
-        exp_str = r"<function Hello.say at 0x>"
+        func = _ClassPickleable.say
+        exp_str = r"<function _ClassPickleable.say at 0x>"
         exp_bound = False
         exp_lambda = False
         # A unbound class method is actually pickleable.
@@ -132,8 +149,8 @@ class Test_is_pickleable1(hunitest.TestCase):
 
     def test_method2(self) -> None:
         # A static class method.
-        func = Hello.say2
-        exp_str = r"<function Hello.say2 at 0x>"
+        func = _ClassPickleable.say2
+        exp_str = r"<function _ClassPickleable.say2 at 0x>"
         exp_bound = False
         exp_lambda = False
         exp_pickled = True
@@ -141,9 +158,9 @@ class Test_is_pickleable1(hunitest.TestCase):
 
     def test_method3(self) -> None:
         # A bound method.
-        hello_ = Hello()
-        func = hello_.say
-        exp_str = r"<bound method Hello.say of <helpers.test.test_hintrospection.Hello object at 0x>>"
+        class_instance = _ClassPickleable()
+        func = class_instance.say
+        exp_str = r"<bound method _ClassPickleable.say of <helpers.test.test_hintrospection._ClassPickleable object at 0x>>"
         exp_bound = True
         exp_lambda = False
         # A method bound to an object is just a function, so it's pickleable.
@@ -152,13 +169,146 @@ class Test_is_pickleable1(hunitest.TestCase):
 
     def test_method4(self) -> None:
         # A static class method.
-        hello_ = Hello()
-        func = hello_.say2
-        exp_str = r"<function Hello.say2 at 0x>"
+        class_instance = _ClassPickleable()
+        func = class_instance.say2
+        exp_str = r"<function _ClassPickleable.say2 at 0x>"
         exp_bound = False
         exp_lambda = False
         exp_pickled = True
         self.helper(func, exp_str, exp_bound, exp_lambda, exp_pickled)
+
+
+class Test_is_pickleable2(hunitest.TestCase):
+    def helper(
+        self,
+        obj: Any,
+        mode: str,
+        expected: bool,
+    ) -> None:
+        """
+        Check that picklebility is detected correctly for specified mode.
+        """
+        _LOG.debug("obj=%s", obj)
+        actual = hintros.is_pickleable(obj, mode=mode)
+        _LOG.debug("actual=%s", actual)
+        _LOG.debug("expected=%s", expected)
+        self.assertEqual(actual, expected)
+
+    def test_non_callable1(self) -> None:
+        obj = [1, "2", 0.3]
+        mode = "type_search"
+        expected = True
+        self.helper(obj, mode, expected)
+
+    def test_non_callable2(self) -> None:
+        obj = [1, "2", 0.3]
+        mode = "try_and_catch"
+        expected = True
+        self.helper(obj, mode, expected)
+
+    def test_lambda1(self) -> None:
+        obj = lambda x: x
+        mode = "type_search"
+        expected = False
+        self.helper(obj, mode, expected)
+
+    def test_lambda2(self) -> None:
+        obj = lambda x: x
+        mode = "try_and_catch"
+        expected = False
+        self.helper(obj, mode, expected)
+
+    def test_local_object1(self) -> None:
+        def _hello() -> bool:
+            return False
+
+        obj = _hello
+        mode = "type_search"
+        expected = True
+        self.helper(obj, mode, expected)
+
+    def test_local_object2(self) -> None:
+        def _hello() -> bool:
+            return False
+
+        obj = _hello
+        mode = "try_and_catch"
+        expected = False
+        self.helper(obj, mode, expected)
+
+    def test_global_object1(self) -> None:
+        obj = hello
+        mode = "type_search"
+        expected = True
+        self.helper(obj, mode, expected)
+
+    def test_global_object2(self) -> None:
+        obj = hello
+        mode = "try_and_catch"
+        expected = True
+        self.helper(obj, mode, expected)
+
+    def test_unbound_class_method1(self) -> None:
+        obj = _ClassPickleable.say
+        mode = "type_search"
+        expected = True
+        self.helper(obj, mode, expected)
+
+    def test_unbound_class_method2(self) -> None:
+        obj = _ClassPickleable.say
+        mode = "try_and_catch"
+        expected = True
+        self.helper(obj, mode, expected)
+
+    def test_static_class_method1(self) -> None:
+        obj = _ClassPickleable.say
+        mode = "type_search"
+        expected = True
+        self.helper(obj, mode, expected)
+
+    def test_static_class_method2(self) -> None:
+        obj = _ClassPickleable.say
+        mode = "try_and_catch"
+        expected = True
+        self.helper(obj, mode, expected)
+
+    def test_bound_to_object_method1(self) -> None:
+        class_instance = _ClassPickleable()
+        obj = class_instance.say
+        mode = "type_search"
+        expected = False
+        self.helper(obj, mode, expected)
+
+    def test_bound_to_object_method2(self) -> None:
+        class_instance = _ClassPickleable()
+        obj = class_instance.say
+        mode = "try_and_catch"
+        expected = True
+        self.helper(obj, mode, expected)
+
+    def test_pickleable_class1(self) -> None:
+        obj = _ClassPickleable()
+        mode = "type_search"
+        expected = True
+        self.helper(obj, mode, expected)
+
+    def test_pickleable_class2(self) -> None:
+        obj = _ClassPickleable()
+        mode = "try_and_catch"
+        expected = True
+        self.helper(obj, mode, expected)
+
+    def test_nonpickleable_class1(self) -> None:
+        obj = _ClassNonPickleable()
+        mode = "type_search"
+        expected = True
+        self.helper(obj, mode, expected)
+
+    def test_nonpickleable_class2(self) -> None:
+        obj = _ClassNonPickleable()
+        mode = "try_and_catch"
+        expected = False
+        self.helper(obj, mode, expected)
 
 
 # #############################################################################

@@ -33,7 +33,7 @@
 
 - The user runs commands in an abs dir, e.g., `/Users/saggese/src/{amp1,cmamp1}`
 - The user refers in the command line to `dir_basename`, which is the basename
-  of the integration directories (e.g., `amp1`, `cmamp1`, `sorrentum1`)
+  of the integration directories (e.g., `amp1`, `cmamp1`, `kaizenflow1`)
   - The `src_dir_basename` is the one where the command is issued
   - The `dst_dir_basename` is assumed to be parallel to the `src_dir_basename`
 - The dirs are then transformed in absolute dirs `abs_src_dir`
@@ -50,9 +50,9 @@
   > cd cmamp1
   > git checkout master
   > i integrate_create_branch --dir-basename cmamp1
-  > cd sorrentum1
+  > cd kaizenflow1
   > git checkout master
-  > i integrate_create_branch --dir-basename sorrentum1
+  > i integrate_create_branch --dir-basename kaizenflow1
   ```
 
 - In one line
@@ -61,9 +61,9 @@
   cd $HOME/cmamp1 && \
     git checkout master && \
     i integrate_create_branch --dir-basename cmamp1 && \
-    cd $HOME/sorrentum1 && \
+    cd $HOME/kaizenflow1 && \
     git checkout master && \
-    i integrate_create_branch --dir-basename sorrentum1
+    i integrate_create_branch --dir-basename kaizenflow1
   ```
 
 - Remove white spaces from both source and destination repos:
@@ -89,7 +89,7 @@
 - Align `lib_tasks.py`:
 
   ```bash
-  > vimdiff ~/src/{cmamp1, sorrentum1}/tasks.py; diff_to_vimdiff.py --dir1 ~/src/cmamp1 --dir2 ~/src/sorrentum1 --subdir helpers
+  > vimdiff ~/src/{cmamp1, kaizenflow1}/tasks.py; diff_to_vimdiff.py --dir1 ~/src/cmamp1 --dir2 ~/src/kaizenflow1 --subdir helpers
   ```
 
 - Lint both dirs:
@@ -123,7 +123,7 @@
   ```bash
   > cd amp1
   > i integrate_create_branch --dir-basename amp1
-  > i integrate_create_branch --dir-basename sorrentum1
+  > i integrate_create_branch --dir-basename kaizenflow1
   > cd cmamp1
   > i integrate_create_branch --dir-basename cmamp1
   ```
@@ -132,7 +132,7 @@
 
   ```bash
   > i integrate_files --file-direction common_files
-  > i integrate_files --file-direction common_files --src-dir-basename cmamp1 --dst-dir-basename sorrentum1
+  > i integrate_files --file-direction common_files --src-dir-basename cmamp1 --dst-dir-basename kaizenflow1
 
   > i integrate_files --file-direction only_files_in_src
   > i integrate_files --file-direction only_files_in_dst

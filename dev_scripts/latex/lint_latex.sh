@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #
-# Dockerized linter for Latex.
+# Dockerized linter for Latex using prettier.
+# This is the new flow.
 #
 
 set -eux
@@ -11,36 +12,27 @@ fi;
 FILE_NAME=$1
 
 # 1) Build container.
-IMAGE=ghcr.io/cmhughes/latexindent.pl
+IMAGE=lint_latex
 # See devops/docker_build/install_publishing_tools.sh
 cat >/tmp/tmp.dockerfile <<EOF
-FROM alpine:latest
-# Installing perl
-RUN apk --no-cache add miniperl perl-utils
+FROM ubuntu:latest
 
-# Installing incompatible latexindent perl dependencies via apk
-RUN apk --no-cache add \
-    perl-log-dispatch \
-    perl-namespace-autoclean \
-    perl-specio \
-    perl-unicode-linebreak
+RUN apt-get update && \
+    apt-get -y upgrade
 
-# Installing remaining latexindent perl dependencies via cpan
-RUN apk --no-cache add curl wget make
-RUN cd /usr/local/bin && \
-    curl -L https://cpanmin.us/ -o cpanm && \
-    chmod +x cpanm
-RUN cpanm -n App::cpanminus
-RUN cpanm -n File::HomeDir
-RUN cpanm -n Params::ValidationCompiler
-RUN cpanm -n YAML::Tiny
-RUN cpanm -n 
+RUN apt-get install -y curl && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-RUN wget http://mirror.ctan.org/support/latexindent.zip && \
-    unzip latexindent.zip && \
-    cd latexindent && \
-    chmod +x latexindent.pl && \
-    mv latexindent.pl LatexIndent defaultSettings.yaml /usr/local/bin/
+# Install Node.js.
+RUN curl -sL https://deb.nodesource.com/setup_18.x | bash -
+RUN apt-get update && apt-get install -y nodejs
+RUN node -v
+RUN npm -v
+
+# Install Prettier.
+RUN npm install -g prettier && \
+    npm install -g prettier-plugin-latex
 EOF
 docker build -f /tmp/tmp.dockerfile -t $IMAGE .
 
@@ -48,19 +40,14 @@ docker build -f /tmp/tmp.dockerfile -t $IMAGE .
 EXEC="./tmp.lint_latex.sh"
 # Note that we need to escape some chars.
 cat >$EXEC <<EOF
-latexindent.pl -w -s $FILE_NAME
-perl -pi -e 's/\t/  /g' $FILE_NAME
-# Remove tightlist.
-perl -ni -e 'print unless /\\\\tightlist/' $FILE_NAME
-# Merge lines with \item
-perl -i -pe 'if (/\\\\item\\s*$/) { chomp; \$_ .= <> }' $FILE_NAME
-perl -pi -e 's/(\\\\item)\\s+/\$1 /' $FILE_NAME
-#
-perl -pi -e 's/\\\\\(/\\\$/g' $FILE_NAME
-perl -pi -e 's/\\\\\)/\\\$/g' $FILE_NAME
-#
-latexindent.pl -w -s $FILE_NAME
-perl -pi -e 's/\t/  /g' $FILE_NAME
+npx prettier \
+    --plugin=/usr/lib/node_modules/prettier-plugin-latex/dist/prettier-plugin-latex.js \
+    --prose-wrap always \
+    --tab-width 2 \
+    --use-tabs false \
+    --print-width 80 \
+    --write \
+    $@
 EOF
 chmod +x $EXEC
 
@@ -74,4 +61,6 @@ OPTS=""
 docker run --rm -it $OPTS --workdir "${WORKDIR}" --mount "${MOUNT}" $IMAGE:latest $CMD "$@"
 
 # To debug:
-# > docker run --rm -it --user 2908:2908 --workdir /local/home/gsaggese/src/sasm-lime6/amp --mount type=bind,source=/local/home/gsaggese/src/sasm-lime6/amp,target=/local/home/gsaggese/src/sasm-lime6/amp ctags:latest
+#docker run --rm -it $OPTS --workdir "${WORKDIR}" --mount "${MOUNT}" $IMAGE:latest bash
+# > docker run --rm -it \
+#   --user 2908 --workdir /local/home/gsaggese/src/sasm-lime6/amp --mount type=bind,source=/local/home/gsaggese/src/sasm-lime6/amp,target=/local/home/gsaggese/src/sasm-lime6/amp ctags:latest

@@ -175,8 +175,8 @@ def is_inside_ecs_container() -> bool:
     """
     Detect whether we are running in an ECS container.
 
-    When deploying jobs via ECS the container obtains credentials based on
-    passed task role specified in the ECS task-definition, refer to:
+    When deploying jobs via ECS the container obtains credentials based
+    on passed task role specified in the ECS task-definition, refer to:
     https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-iam-roles.html.
     """
     ret = "AWS_CONTAINER_CREDENTIALS_RELATIVE_URI" in os.environ
@@ -231,7 +231,7 @@ def _dassert_setup_consistency() -> None:
     )
     if sum_ != 1:
         msg = "One and only one set-up config should be true:\n" + setup_to_str()
-        # TODO(gp): Unclear if this is a difference between Sorrentum and cmamp.
+        # TODO(gp): Unclear if this is a difference between Kaizenflow and cmamp.
         _LOG.warning(msg)
         # raise ValueError(msg)
 

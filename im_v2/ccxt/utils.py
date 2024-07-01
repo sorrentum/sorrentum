@@ -3,6 +3,7 @@ Import as:
 
 import im_v2.ccxt.utils as imv2ccuti
 """
+import re
 
 import helpers.hdbg as hdbg
 
@@ -41,3 +42,28 @@ def convert_currency_pair_to_ccxt_format(
         # E.g., USD_BTC -> USD/BTC.
         converted_pair = currency_pair.replace("_", "/")
     return converted_pair
+
+
+def convert_full_symbol_to_binance_symbol(
+    full_symbol: str, settling_currency: str = "USDT"
+) -> str:
+    """
+    Convert full symbol to Binance symbol.
+
+    The Binance symbol consists of the asset pair, e.g. BTC/USDT, and a settling currency, e.g. USDT.
+
+    :param full_symbol: full symbol, e.g. "binance::AVAX_USDT"
+    :return: Binance symbol, e.g. "AVAX/USDT:USDT"
+    """
+    # Check if the `full_symbol` matches the format.
+    match = re.match(r"\b\w+::[A-Z\d]+_[A-Z\d]+\b", full_symbol)
+    hdbg.dassert_is_not(
+        match,
+        None,
+        f"The full_symbol '{full_symbol}' does not match the format '{{exchange}}::{{CURRENCY1}}_{{CURRENCY2}}'.",
+    )
+    # Remove the exchange name, e.g. "binance::AVAX_USDT" -> "AVAX_USDT".
+    symbol = full_symbol.split("::")[1]
+    # Convert the symbol to the Binance format, e.g. "AVAX_USDT" -> "AVAX/USDT:USDT".
+    binance_symbol = symbol.replace("_", "/") + f":{settling_currency}"
+    return binance_symbol

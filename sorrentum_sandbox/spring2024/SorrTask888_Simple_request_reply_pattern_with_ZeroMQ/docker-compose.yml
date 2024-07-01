@@ -1,0 +1,32 @@
+version: '3'
+
+services:
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile_server
+    networks:
+      - zmq_network
+
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile_client
+    depends_on:
+      - server
+    networks:
+      - zmq_network
+
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile_nginx
+    ports:
+      - "80:80"
+    networks:
+      - zmq_network
+
+networks:
+  zmq_network:
+    driver: bridge
+

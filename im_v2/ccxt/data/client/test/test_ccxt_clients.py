@@ -1822,7 +1822,7 @@ class TestCcxtHistoricalPqByTileClient1(icdc.ImClientTestCase):
 
     # ////////////////////////////////////////////////////////////////////////
 
-    # TODO(gp): Difference between cmamp1 and sorrentum. Why is there a
+    # TODO(gp): Difference between cmamp1 and kaizenflow. Why is there a
     # difference?
     @pytest.mark.slow("Slow via GH, but fast on the server")
     def test_filter_columns1(self) -> None:

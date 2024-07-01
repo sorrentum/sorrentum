@@ -14,7 +14,7 @@
 
 # On-boarding
 
-- [Signing up for Sorrentum](/docs/onboarding/sorrentum.signing_up.how_to_guide.md)
+- [Signing up for KaizenFlow](/docs/onboarding/kaizenflow.signing_up.how_to_guide.md)
 
 # How to start developing
 
@@ -22,13 +22,13 @@ This contains the absolute minimal amount of info to start developing
 
 - [General Rules of Collaboration](/docs/work_organization/all.team_collaboration.how_to_guide.md)
 
-- [Quick start for developing](/docs/onboarding/sorrentum.set_up_development_environment.how_to_guide.md)
+- [Quick start for developing](/docs/onboarding/kaizenflow.set_up_development_environment.how_to_guide.md)
 
-- [How to organize your work](/docs/work_organization/sorrentum.organize_your_work.how_to_guide.md)
+- [How to organize your work](/docs/work_organization/kaizenflow.organize_your_work.how_to_guide.md)
 
 - [First Review Process](/docs/coding/all.submit_code_for_review.how_to_guide.md)
 
-- [Sorrentum Python coding style guide](/docs/coding/all.coding_style.how_to_guide.md)
+- [KaizenFlow Python coding style guide](/docs/coding/all.coding_style.how_to_guide.md)
 
 - [Jupyter notebook best practices](/docs/coding/all.jupyter_notebook.how_to_guide.md)
 

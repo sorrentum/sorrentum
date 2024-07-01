@@ -102,12 +102,12 @@
     report_memory_usage=False report_cpu_usage=False
     ## gh_issue_title: issue_id='274', repo_short_name='current'
     ## gh_login:
-    07:35:54 - INFO  lib_tasks_gh.py gh_login:48                            account='sorrentum'
-    export GIT_SSH_COMMAND='ssh -i /Users/saggese/.ssh/id_rsa.sorrentum.github'
-    gh auth login --with-token </Users/saggese/.ssh/github_pat.sorrentum.txt
+    07:35:54 - INFO  lib_tasks_gh.py gh_login:48                            account='kaizenflow'
+    export GIT_SSH_COMMAND='ssh -i /Users/saggese/.ssh/id_rsa.kaizenflow.github'
+    gh auth login --with-token </Users/saggese/.ssh/github_pat.kaizenflow.txt
 
     # Copied to system clipboard:
-    CmTask274_Update_names: https://github.com/sorrentum/sorrentum/pull/274
+    CmTask274_Update_names: https://github.com/kaizen-ai/kaizenflow/pull/274
     ```
     - Before running verify that GitHub cli `gh` works
       ```

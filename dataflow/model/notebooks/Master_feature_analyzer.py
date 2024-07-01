@@ -5,7 +5,7 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.14.1
+#       jupytext_version: 1.15.2
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -48,32 +48,29 @@ hprint.config_notebook()
 # # Build config
 
 # %%
-amp_dir = hgit.get_amp_abs_path()
-dir_name = os.path.join(
-    amp_dir,
-    "dataflow/model/test/outcomes/Test_run_master_feature_analyzer/input/tiled_results",
-)
-cols = [
-    "vwap.ret_0.vol_adj.c.lag0",
-    "vwap.ret_0.vol_adj.c.lag1",
-    "vwap.ret_0.vol_adj.c.lag2",
-    "vwap.ret_0.vol_adj.c.lag3",
-]
-config = {
-    "dir_name": dir_name,
-    "asset_id": 1467591036,
-    "asset_id_col": "asset_id",
-    "resampling_frequency": "5T",
-    "feature_column_names": cols,
-    "single_feature_column_name": "vwap.ret_0.vol_adj.c.lag0",
-    "regression_config": {
-        "x_cols": cols,
-        "y_col": "vwap.ret_0.vol_adj.c.lag0",
-        "x_col_shift": 2,
-    },
-}
-config = cconfig.Config().from_dict(config)
-print(config)
+# Get config from env when running the notebook via the run_notebook.py script.
+default_config = cconfig.get_config_from_env()
+if default_config:
+    _LOG.info("Using config from env vars")
+else:
+    _LOG.info("Using hardwired config")
+    amp_dir = hgit.get_amp_abs_path()
+    dir_name = os.path.join(
+        amp_dir,
+        "/shared_data/backtest.danya/build_tile_configs.C13a.ccxt_v7_5-all.2T.2023-06-01_2024-01-31.ins.run0/tiled_results",
+    )
+    cols = ["f1"]
+    default_config_dict = {
+        "dir_name": dir_name,
+        "asset_id": 1467591036,
+        "asset_id_col": "asset_id",
+        "resampling_frequency": "2T",
+        "feature_column_names": cols,
+        "single_feature_column_name": "f1",
+    }
+    # Build config from dict.
+    default_config = cconfig.Config().from_dict(default_config_dict)
+print(default_config)
 
 # %% [markdown]
 # # Report tile metadata
@@ -81,7 +78,7 @@ print(config)
 # %%
 parquet_tile_analyzer = dtfmod.ParquetTileAnalyzer()
 parquet_tile_metadata = parquet_tile_analyzer.collate_parquet_tile_metadata(
-    config["dir_name"]
+    default_config["dir_name"]
 )
 
 # %%
@@ -101,9 +98,15 @@ display(asset_ids)
 asset_batch_size = len(asset_ids)
 # Add the `asset_id_col` to also display the instruments. This is also required
 # to make `yield_parquet_tiles_by_assets()` work.
-requested_columns = [config["asset_id_col"]] + config["feature_column_names"]
+requested_columns = [default_config["asset_id_col"]] + default_config[
+    "feature_column_names"
+]
 tile_iter = hparque.yield_parquet_tiles_by_assets(
-    config["dir_name"], asset_ids, config["asset_id_col"], asset_batch_size, None
+    default_config["dir_name"],
+    asset_ids,
+    default_config["asset_id_col"],
+    asset_batch_size,
+    None,
 )
 
 # %%
@@ -111,8 +114,10 @@ tile = next(tile_iter)
 
 # %%
 feature_df = dtfmod.process_parquet_read_df(
-    tile[config["feature_column_names"] + [config["asset_id_col"]]],
-    config["asset_id_col"],
+    tile[
+        default_config["feature_column_names"] + [default_config["asset_id_col"]]
+    ],
+    default_config["asset_id_col"],
 )
 
 # %%
@@ -156,7 +161,9 @@ mean_feature_stats_per_asset[
 mean_feature_corr = costatis.compute_mean_pearson_correlation_by_group(
     feature_df, 1
 )
-coplotti.plot_heatmap(mean_feature_corr, mode="clustermap", figsize=(10, 10))
+# Plot heatmap if correlation matrix contains >1 feature.
+if mean_feature_corr.shape[1] > 1:
+    coplotti.plot_heatmap(mean_feature_corr, mode="clustermap", figsize=(10, 10))
 
 # %%
 mean_asset_corr = costatis.compute_mean_pearson_correlation_by_group(
@@ -168,12 +175,15 @@ coplotti.plot_heatmap(mean_asset_corr, mode="clustermap", figsize=(10, 10))
 # # Per-asset cross-sectional feature analysis (all features for a single asset)
 
 # %%
-single_asset_feature_df = feature_df.T.xs(config["asset_id"], level=1).T
+single_asset_feature_df = feature_df.T.xs(default_config["asset_id"], level=1).T
 
 # %%
-coplotti.plot_heatmap(
-    single_asset_feature_df.corr(), mode="clustermap", figsize=(10, 10)
-)
+single_asset_feature_df_corr = single_asset_feature_df.corr()
+# Plot heatmap if correlation matrix contains >1 feature.
+if single_asset_feature_df_corr.shape[1] > 1:
+    coplotti.plot_heatmap(
+        single_asset_feature_df.corr(), mode="clustermap", figsize=(10, 10)
+    )
 # Alternative method (prints correlation matrix and does not reorder columns):
 # coplotti.plot_correlation_matrix(features)
 
@@ -182,7 +192,7 @@ coplotti.plot_effective_correlation_rank(single_asset_feature_df)
 
 # %%
 coplotti.plot_projection(
-    single_asset_feature_df.resample(config["resampling_frequency"]).sum(
+    single_asset_feature_df.resample(default_config["resampling_frequency"]).sum(
         min_count=1
     )
 )
@@ -197,7 +207,7 @@ single_asset_feature_df.apply(costatis.compute_moments)
 # # Single feature analysis
 
 # %%
-feature = config["single_feature_column_name"]
+feature = default_config["single_feature_column_name"]
 _LOG.info("feature=%s", feature)
 
 # %%
@@ -225,25 +235,5 @@ coplotti.plot_correlation_matrix(xs_feature_df)
 
 # %%
 coplotti.plot_effective_correlation_rank(xs_feature_df)
-
-# %% [markdown]
-# # Linear regression
-
-# %%
-# NOTE: Discretion required to adapt and interpret.
-regression_coeffs = costatis.compute_regression_coefficients_by_group(
-    feature_df,
-    **config["regression_config"].to_dict(),
-)
-display(regression_coeffs.head())
-
-# %%
-q_vals = costatis.estimate_q_values(regression_coeffs["p_val_2s"])
-regression_coeffs["q_val"] = q_vals
-
-# %%
-regression_coeffs["q_val"].xs(
-    config["single_feature_column_name"], level=1
-).sort_values().reset_index()["q_val"].plot()
 
 # %%

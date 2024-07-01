@@ -107,7 +107,7 @@ class TestDbHelper(hunitest.TestCase, abc.ABC):
         # TODO(gp): -> db_connection
         cls.connection = hsql.get_connection(*connection_info, autocommit=True)
 
-    # TODO(Grisha): difference between cmamp and sorrentum.
+    # TODO(Grisha): difference between cmamp and kaizenflow.
     @classmethod
     def tearDownClass(cls) -> None:
         """

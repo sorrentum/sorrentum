@@ -33,19 +33,19 @@ def _print(msg: str) -> None:
 
 
 def get_name() -> str:
-    return "//sorr"
+    return "//kaizen"
 
 
 def get_repo_map() -> Dict[str, str]:
     """
     Return a mapping of short repo name -> long repo name.
     """
-    repo_map: Dict[str, str] = {"sorr": "sorrentum/sorrentum"}
+    repo_map: Dict[str, str] = {"kaizen": "kaizen-ai/kaizenflow"}
     return repo_map
 
 
 def get_extra_amp_repo_sym_name() -> str:
-    return "sorrentum/sorrentum"
+    return "kaizen-ai/kaizenflow"
 
 
 # TODO(gp): -> get_gihub_host_name
@@ -85,7 +85,7 @@ def _raise_invalid_host(only_warning: bool) -> None:
     host_os_name = os.uname()[0]
     am_host_os_name = os.environ.get("AM_HOST_OS_NAME", None)
     msg = f"Don't recognize host: host_os_name={host_os_name}, am_host_os_name={am_host_os_name}"
-    # TODO(Grisha): unclear if it is a difference between `cmamp` and `sorrentum`.
+    # TODO(Grisha): unclear if it is a difference between `cmamp` and `kaizenflow`.
     if only_warning:
         _LOG.warning(msg)
     else:

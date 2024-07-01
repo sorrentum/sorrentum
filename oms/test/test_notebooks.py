@@ -11,7 +11,7 @@ import pytest
 
 import core.config as cconfig
 import dev_scripts.notebooks as dsnrn
-import helpers.hdbg as hdbg
+import helpers.hdatetime as hdateti
 import helpers.hgit as hgit
 import helpers.hs3 as hs3
 import helpers.hserver as hserver
@@ -97,30 +97,13 @@ def build_test_broker_portfolio_reconciliation_config(
     config_file_name = "system_config.output.values_as_strings.pkl"
     system_config_path = os.path.join(system_log_dir, config_file_name)
     system_config = cconfig.load_config_from_pickle(system_config_path)
-    hdbg.dassert_in("dag_runner_config", system_config)
-    if isinstance(system_config["dag_runner_config"], tuple):
-        _LOG.warning("Reading Config v1.0")
-        bar_duration = reconcil.extract_bar_duration_from_pkl_config(
-            system_log_dir
-        )
-        universe_version = reconcil.extract_universe_version_from_pkl_config(
-            system_log_dir
-        )
-        table_name = reconcil.extract_table_name_from_pkl_config(system_log_dir)
-    else:
-        # TODO(Grisha): preserve types when reading SystemConfig back and
-        #  remove all the post-processing.
-        _LOG.warning("Reading Config v2.0")
-        hdbg.dassert_isinstance(system_config, cconfig.Config)
-        bar_duration_in_secs = system_config["dag_runner_config"][
-            "bar_duration_in_secs"
-        ]
-        bar_duration_in_mins = int(int(bar_duration_in_secs) / 60)
-        bar_duration = f"{bar_duration_in_mins}T"
-        universe_version = system_config["market_data_config"]["universe_version"]
-        table_name = system_config["market_data_config"]["im_client_config"][
-            "table_name"
-        ]
+    # Get param values from SystemConfig.
+    bar_duration_in_secs = reconcil.get_bar_duration_from_config(system_config)
+    bar_duration = hdateti.convert_seconds_to_pandas_minutes(bar_duration_in_secs)
+    universe_version = system_config["market_data_config", "universe_version"]
+    table_name = system_config[
+        "market_data_config", "im_client_config", "table_name"
+    ]
     #
     config_list = oexancon.build_broker_portfolio_reconciliation_configs(
         system_log_dir,

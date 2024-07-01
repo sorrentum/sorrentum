@@ -235,7 +235,7 @@
 ## Link PR to GH issue
 
 - Mention the corresponding issue in the PR description to ease the navigation
-E.g., see an [example](https://github.com/sorrentum/sorrentum/pull/288#issue-1729654983)
+E.g., see an [example](https://github.com/kaizen-ai/kaizenflow/pull/288#issue-1729654983)
 
 ## Fix later
 

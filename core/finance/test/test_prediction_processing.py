@@ -10,6 +10,75 @@ import helpers.hunit_test as hunitest
 _LOG = logging.getLogger(__name__)
 
 
+class TestComputeBarStartTimestamps(hunitest.TestCase):
+    def test1(self) -> None:
+        """
+        Check that the function works correctly if input is a DataFrame.
+        """
+        index = pd.date_range(start="2023-03-03", periods=4, freq="D")
+        data = {"value": [0, 1, 2, 3], "dummy_variable": ["a", "b", "c", "d"]}
+        df = pd.DataFrame(data=data, index=index)
+        actual = cfiprpro.compute_bar_start_timestamps(df)
+        # Set expected values.
+        expected_length = 4
+        expected_unique_values = None
+        expected_signature = r"""
+        bar_start_timestamp
+        2023-03-03 2023-03-02
+        2023-03-04 2023-03-03
+        2023-03-05 2023-03-04
+        2023-03-06 2023-03-05
+        """
+        # Check the result.
+        self.check_srs_output(
+            actual, expected_length, expected_unique_values, expected_signature
+        )
+
+    def test2(self) -> None:
+        """
+        Check that the function works correctly if input is a Series.
+        """
+        index = pd.date_range(start="2022-03-03", periods=4, freq="D")
+        data = range(4)
+        series = pd.Series(data=data, index=index)
+        actual = cfiprpro.compute_bar_start_timestamps(series)
+        # Set expected values.
+        expected_length = 4
+        expected_unique_values = None
+        expected_signature = r"""
+        bar_start_timestamp
+        2022-03-03 2022-03-02
+        2022-03-04 2022-03-03
+        2022-03-05 2022-03-04
+        2022-03-06 2022-03-05
+        """
+        # Check the result.
+        self.check_srs_output(
+            actual, expected_length, expected_unique_values, expected_signature
+        )
+
+    def test3(self) -> None:
+        """
+        Check that an error is raised when input index has no freq.
+        """
+        index = pd.to_datetime(["2023-03-03", "2023-03-04", "2023-03-05", "2023-03-06"])
+        data = {"value": [0, 1, 2, 3], "dummy_variable": ["a", "b", "c", "d"]}
+        df = pd.DataFrame(data=data, index=index)
+        # Check that the appropriate error is raised.
+        with self.assertRaises(AssertionError) as cm:
+            cfiprpro.compute_bar_start_timestamps(df)
+        actual = str(cm.exception)
+        expected = r"""
+        * Failed assertion *
+        cond=None
+        DatetimeIndex must have a frequency.
+        """
+        self.assert_equal(actual, expected, fuzzy_match=True)
+
+
+# #############################################################################
+
+
 class TestStackPredictionDf(hunitest.TestCase):
     def test1(self) -> None:
         df = self._get_data()
@@ -58,3 +127,139 @@ datetime,MN0,MN1,MN0,MN1,MN0,MN1,MN0,MN1
         )
         df.index.freq = "T"
         return df
+
+
+# #############################################################################
+
+
+class TestComputeEpoch(hunitest.TestCase):
+    """
+    Test the computation of epoch time series with different units.
+    """
+
+    def helper(self) -> pd.Series:
+        """
+        Fetch input data for test.
+        """
+        timestamp_index = pd.date_range("2024-01-01", periods=10, freq="T")
+        close = list(range(200, 210))
+        data = {"close": close}
+        srs = pd.Series(data=data, index=timestamp_index)
+        return srs
+
+    def test1(self) -> None:
+        """
+        Check that epoch is computed correctly for minute unit.
+        """
+        unit = "minute"
+        srs = self.helper()
+        result = cfiprpro.compute_epoch(srs, unit=unit)
+        # Define expected values.
+        expected_length = 10
+        expected_column_value = None
+        expected_signature = r"""
+                              minute
+        2024-01-01 00:00:00    28401120
+        2024-01-01 00:01:00    28401121
+        2024-01-01 00:02:00    28401122
+        2024-01-01 00:03:00    28401123
+        2024-01-01 00:04:00    28401124
+        2024-01-01 00:05:00    28401125
+        2024-01-01 00:06:00    28401126
+        2024-01-01 00:07:00    28401127
+        2024-01-01 00:08:00    28401128
+        2024-01-01 00:09:00    28401129
+        """
+        # Check signature.
+        self.check_srs_output(
+            result, expected_length, expected_column_value, expected_signature
+        )
+
+    def test2(self) -> None:
+        """
+        Check that epoch is computed correctly for second unit.
+        """
+        unit = "second"
+        srs = self.helper()
+        result = cfiprpro.compute_epoch(srs, unit=unit)
+        # Define expected values.
+        expected_length = 10
+        expected_column_value = None
+        expected_signature = r"""
+                                second
+        2024-01-01 00:00:00    1704067200
+        2024-01-01 00:01:00    1704067260
+        2024-01-01 00:02:00    1704067320
+        2024-01-01 00:03:00    1704067380
+        2024-01-01 00:04:00    1704067440
+        2024-01-01 00:05:00    1704067500
+        2024-01-01 00:06:00    1704067560
+        2024-01-01 00:07:00    1704067620
+        2024-01-01 00:08:00    1704067680
+        2024-01-01 00:09:00    1704067740
+        """
+        # Check signature.
+        self.check_srs_output(
+            result, expected_length, expected_column_value, expected_signature
+        )
+
+    def test3(self) -> None:
+        """
+        Check that epoch is computed correctly for nanosecond unit.
+        """
+        unit = "nanosecond"
+        srs = self.helper()
+        result = cfiprpro.compute_epoch(srs, unit=unit)
+        # Define expected values.
+        expected_length = 10
+        expected_column_value = None
+        expected_signature = r"""
+                                     nanosecond
+        2024-01-01 00:00:00    1704067200000000000
+        2024-01-01 00:01:00    1704067260000000000
+        2024-01-01 00:02:00    1704067320000000000
+        2024-01-01 00:03:00    1704067380000000000
+        2024-01-01 00:04:00    1704067440000000000
+        2024-01-01 00:05:00    1704067500000000000
+        2024-01-01 00:06:00    1704067560000000000
+        2024-01-01 00:07:00    1704067620000000000
+        2024-01-01 00:08:00    1704067680000000000
+        2024-01-01 00:09:00    1704067740000000000
+        """
+        # Check signature.
+        self.check_srs_output(
+            result, expected_length, expected_column_value, expected_signature
+        )
+
+    def test4(self) -> None:
+        """
+        Check that epoch is computed correctly for dataframe input.
+        """
+        srs = self.helper()
+        df = srs.to_frame()
+        result = cfiprpro.compute_epoch(df)
+        # Define expected values.
+        expected_length = 10
+        expected_column_value = None
+        expected_signature = r"""
+        # df=
+        index=[2024-01-01 00:00:00, 2024-01-01 00:09:00]
+        columns=minute
+        shape=(10, 1)
+                                minute
+        2024-01-01 00:00:00        28401120
+        2024-01-01 00:01:00        28401121
+        2024-01-01 00:02:00        28401122
+                                 ...
+        2024-01-01 00:07:00        28401127
+        2024-01-01 00:08:00        28401128
+        2024-01-01 00:09:00        28401129
+        """
+        # Check signature.
+        self.check_df_output(
+            result,
+            expected_length,
+            expected_column_value,
+            expected_column_value,
+            expected_signature,
+        )

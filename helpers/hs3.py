@@ -538,7 +538,7 @@ def _get_aws_file_text(key_to_env_var: Dict[str, str]) -> List[str]:
     """
     Generate text from env vars for AWS files.
 
-    E.g.:
+    E.g.: 
     ```
     aws_access_key_id=***
     aws_secret_access_key=***
@@ -978,3 +978,33 @@ def expand_archived_data(src_tgz_file: str, dst_dir: str) -> str:
     hdbg.dassert_dir_exists(tgz_dst_dir)
     # Return `{dst_dir}/experiment.RH1E`.
     return tgz_dst_dir
+
+
+def get_s3_bucket_from_stage(stage: str, *, add_suffix: str = None) -> str:
+    """
+    Retrieve the S3 bucket name based on the provided deployment stage.
+
+    :param stage: the deployment stage, which can be 'test', 'preprod',
+        or 'prod'.
+    :param add_suffix: optional suffix to append to the bucket name.
+    :return: return corresponding S3 bucket name.
+    """
+    # Mapping of stages to their respective S3 bucket names.
+    _S3_BUCKET_BY_STAGE = {
+        "test": "cryptokaizen-data-test",
+        "preprod": "cryptokaizen-data.preprod",
+        "prod": "cryptokaizen-data",
+    }
+    # TODO(Juraj): hack applied until a solution for #CmTask6620 is found.
+    # Retrieve the region from the environment variable or use the default region 'eu-north-1'.
+    region = os.environ.get("CK_AWS_DEFAULT_REGION", "eu-north-1")
+    # TODO(Juraj): hack applied until a solution for #CmTask6620 is found.
+    if region == "ap-northeast-1":
+        _S3_BUCKET_BY_STAGE["preprod"] = "cryptokaizen-data-tokyo.preprod"
+    # Ensure the provided stage is valid.
+    hdbg.dassert_in(stage, _S3_BUCKET_BY_STAGE)
+    s3_bucket = _S3_BUCKET_BY_STAGE[stage]
+    # Append the suffix to the bucket name if provided.
+    if add_suffix:
+        s3_bucket = os.path.join(s3_bucket, add_suffix)
+    return s3_bucket

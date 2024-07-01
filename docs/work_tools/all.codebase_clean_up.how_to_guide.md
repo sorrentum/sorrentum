@@ -55,7 +55,7 @@
 
 - Ideally we would like to apply all the changes automatically through the
   script
-  - E.g., in [SorrTask258](https://github.com/sorrentum/sorrentum/issues/258) a
+  - E.g., in [SorrTask258](https://github.com/kaizen-ai/kaizenflow/issues/258) a
     script that replaces `pytest.raises` with `self.assertRaises` everywhere in
     the code
 - We are ok to make the vast majority (like 95%) of the changes automatically,
@@ -154,8 +154,8 @@
 
 # Usage examples
 
-- See [SorrIssue259](https://github.com/sorrentum/sorrentum/issues/259) and the
-  related [PR](https://github.com/sorrentum/sorrentum/pull/336) for reference
+- See [SorrIssue259](https://github.com/kaizen-ai/kaizenflow/issues/259) and the
+  related [PR](https://github.com/kaizen-ai/kaizenflow/pull/336) for reference
   - We wanted to make `_to_multiline_cmd()` from `helpers/lib_tasks_utils.py` a
     public function
   - This would require to rename `_to_multiline_cmd()` to `to_multiline_cmd()`
@@ -165,11 +165,11 @@
     will make the replacement smoothly everywhere in the code except for the
     dirs specified `--exclude_dirs` flag.
 
-- See [SorrIssue258](https://github.com/sorrentum/sorrentum/issues/258) and the
-  related [PR](https://github.com/sorrentum/sorrentum/pull/350) for reference
+- See [SorrIssue258](https://github.com/kaizen-ai/kaizenflow/issues/258) and the
+  related [PR](https://github.com/kaizen-ai/kaizenflow/pull/350) for reference
   - We wanted to replace `pytest.raises` with `self.assertRaises`
   - This
-    [script](https://github.com/sorrentum/sorrentum/blob/master/dev_scripts/cleanup_scripts/SorrTask258_Replace_pytest_raises_with_self_assertraises.sh)
+    [script](https://github.com/kaizen-ai/kaizenflow/blob/master/dev_scripts/cleanup_scripts/SorrTask258_Replace_pytest_raises_with_self_assertraises.sh)
     will replace it everywhere in the code
   - Note the use of `--ext` flag to specify the file extentions the script
     should work on

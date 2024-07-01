@@ -788,6 +788,7 @@ system_log_dir signature
 ################################################################################
 # Dir structure
 .
+config_version.txt
 system_config.input.all_values_picklable.pkl
 system_config.input.txt
 system_config.input.values_as_strings.pkl

@@ -1,0 +1,99 @@
+version: "3.8"
+
+# Services defines the different containers that will be part of our setup.
+services:
+  # Broker service for Kafka.
+  broker:
+    image: confluentinc/cp-kafka:7.2.0 # Kafka image.
+    hostname: broker # Hostname assigned within the network.
+    container_name: broker # Name of the container.
+    depends_on:
+      - zookeeper # Depends on the Zookeeper service.
+    ports:
+      - "9092:9092" # Maps host port to container port for external access.
+    environment: # Environment variables for Kafka configuration.
+      KAFKA_BROKER_ID: 1 # Unique ID for the broker in the Kafka cluster.
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181" # Connection string for Zookeeper.
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_LISTENERS: PLAINTEXT://broker:29092,PLAINTEXT_HOST://broker:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092,PLAINTEXT_HOST://broker:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+    networks:
+      - kafka_network # Connects to the Kafka network.
+
+  # Schema Registry for managing Kafka schemas.
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.2.0 # Schema Registry image.
+    hostname: schema-registry
+    container_name: schema-registry
+    depends_on:
+      - zookeeper
+      - broker
+    ports:
+      - "8081:8081" # Port for accessing the Schema Registry.
+    environment:
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: "broker:29092"
+      SCHEMA_REGISTRY_HOST_NAME: "localhost" # Host name; consider changing for Docker environment usage.
+      SCHEMA_REGISTRY_LISTENERS: "http://0.0.0.0:8081"
+    networks:
+      - kafka_network
+
+  # Zookeeper service, required by Kafka for cluster management.
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.2.0 # Zookeeper image.
+    hostname: zookeeper
+    container_name: zookeeper
+    ports:
+      - "2181:2181" # Zookeeper client port.
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181 # Client port.
+      ZOOKEEPER_TICK_TIME: 2000 # The length of a single tick, which affects timeouts.
+    networks:
+      - kafka_network
+
+  # Jupyter notebook for interactive Python sessions.
+  jupyter:
+    container_name: jupyter
+    build:
+      dockerfile: Dockerfile # Specifies the Dockerfile to use for building the image.
+    ports:
+      - "8888:8888" # Port for accessing Jupyter Notebook.
+    volumes:
+      - .:/app # Mounts the current directory to the /app in the container.
+    environment:
+      - PYTHONUNBUFFERED=1 # Python environment variable for unbuffered output.
+    command:
+      [
+        "jupyter",
+        "notebook",
+        "--ip=0.0.0.0",
+        "--port=8888",
+        "--no-browser",
+        "--allow-root",
+        "--NotebookApp.token=''",
+      ]
+    networks:
+      - kafka_network
+
+  # PostgreSQL database service.
+  pgdatabase:
+    image: postgres:14.0 # PostgreSQL image.
+    container_name: pgdatabase
+    environment:
+      POSTGRES_USER: postgres # Database user.
+      POSTGRES_PASSWORD: postgres # Database password.
+      POSTGRES_DB: postgres # Default database created.
+    ports:
+      - "5432:5432" # Database port.
+    networks:
+      - kafka_network
+
+# Defines the network used by the containers.
+networks:
+  kafka_network:
+    name: kafka_network
+    driver: bridge # Uses bridge driver for Docker networking.

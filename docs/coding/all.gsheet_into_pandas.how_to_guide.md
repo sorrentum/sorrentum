@@ -69,8 +69,8 @@
   the existing placeholder file).
 
   ```
-  > mv ~/Downloads/client_secret_421642061916-00pdvmfnf3lrdasoh2ccsnqb5akr4v9f.apps.googleusercontent.com.json ~/src/sorrentum1/helpers/.google_credentials/client_secrets.json
-  > chmod 600 ~/src/sorrentum1/helpers/.google_credentials/client_secrets.json
+  > mv ~/Downloads/client_secret_421642061916-00pdvmfnf3lrdasoh2ccsnqb5akr4v9f.apps.googleusercontent.com.json ~/src/kaizenflow1/helpers/.google_credentials/client_secrets.json
+  > chmod 600 ~/src/kaizenflow1/helpers/.google_credentials/client_secrets.json
   ```
 
 - Some gotchas:

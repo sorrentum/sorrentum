@@ -4,6 +4,10 @@ Import as:
 import data_schema.dataset_schema_utils as dsdascut
 """
 
+# TODO(Juraj): At high level this module essentially performs the same thing as
+#  im_v2/common/universe/universe.py -> try to extract the common logic
+#  according to DRY principle.
+
 import copy
 import logging
 import os
@@ -15,15 +19,17 @@ import helpers.hio as hio
 import helpers.hstring as hstring
 import im_v2.common.universe.universe as imvcounun
 
-# TODO(Juraj): At high level this module essentially performs the same thing as
-#  im_v2/common/universe/universe.py -> try to extract the common logic
-#  according to DRY principle.
 _LOG = logging.getLogger(__name__)
+
+
+# #############################################################################
+# Retrieve schema.
+# #############################################################################
 
 
 def _get_dataset_schema_file_path(*, version: Optional[str] = None) -> str:
     """
-    Get dataset schema file path based on version.
+    Get file path of the dataset schema based on the version.
 
     :param version: dataset schema version (e.g. "v01"). If None it uses
         the latest version available
@@ -31,6 +37,8 @@ def _get_dataset_schema_file_path(*, version: Optional[str] = None) -> str:
         specified version
     """
     # TODO(Juraj): Implement dynamic version resolving and remove hardcoded logic.
+    if version is not None:
+        raise ValueError("Dynamic custom version not supported.")
     ds_file_path = os.path.join(
         hgit.get_amp_abs_path(),
         "data_schema/dataset_schema_versions/dataset_schema_v3.json",
@@ -42,30 +50,20 @@ def _get_dataset_schema_file_path(*, version: Optional[str] = None) -> str:
 
 def get_dataset_schema(*, version: Optional[str] = None) -> Dict[str, Any]:
     """
-    Get dataset schema for a specified version, if version is None fetch the
+    Get dataset schema for a specified version, if version is `None` fetch the
     latest version of the schema.
 
     :param version: dataset schema version (e.g. "v01") to load. If
         None, the latest version is loaded.
-    :return: dataset schema as a nested dictionary, e.g.
-        ```
-        {
-            "dataset_signature":
-                "download_mode.downloading_entity.action_tag",
-            "token_separator_character": ".",
-            "allowed_values": {
-                "download_mode": ["bulk", "periodic_daily"],
-                "downloading_entity": ["airflow", "manual"],
-                "action_tag": ["downloaded_1sec", "resampled_1min"]
-            }
-            "version": "v3"
-        }
-        ```
+    :return: dataset schema as a nested dictionary, e.g. ``` {
+        "dataset_signature":
+        "download_mode.downloading_entity.action_tag",
+        "token_separator_character": ".", "allowed_values": {
+        "download_mode": ["bulk", "periodic_daily"],
+        "downloading_entity": ["airflow", "manual"], "action_tag":
+        ["downloaded_1sec", "resampled_1min"] } "version": "v3" } ```
     """
-    # TODO(Juraj): Implement loading custom version of schema.
-    if version is not None:
-        raise ValueError("Dynamic custom version not supported.")
-    # Load dataset schema as json.
+    # Load dataset schema as JSON.
     ds_file_path = _get_dataset_schema_file_path()
     dataset_schema = hio.from_json(ds_file_path)
     # Resolve version name.
@@ -79,13 +77,18 @@ def get_dataset_schema(*, version: Optional[str] = None) -> Dict[str, Any]:
     return dataset_schema
 
 
+# #############################################################################
+# Validate schema.
+# #############################################################################
+
+
 def _validate_dataset_signature_syntax(
     signature: str, dataset_schema: Dict[str, Any]
 ) -> bool:
     """
     Validate syntax of a dataset signature based on provided schema.
 
-    For example refer to docstirng of
+    For example refer to docstring of
     data_schema/validate_dataset_signature.py
 
     :param signature: dataset signature to validate
@@ -113,7 +116,7 @@ def _validate_dataset_signature_semantics(
     """
     Validate semantics of a dataset signature based on provided schema.
 
-    For example refer to docstirng of
+    For example refer to docstring of
     data_schema/validate_dataset_signature.py
 
     :param signature: dataset signature to validate
@@ -168,20 +171,20 @@ def validate_dataset_signature(
     schema.
 
     For example refer to the docstring of
-    data_schema/validate_dataset_signature.py
+    `data_schema/validate_dataset_signature.py`
 
     :param signature: dataset signature to validate
     :param dataset_schema: dataset schema to validate against
     :return: True if the signature is syntactically AND semantically
         correct, False otherwise
     """
-    # TODO(Juraj): Ideally this function should
-    #  encapsulate a final state machine-like validator
-    #  but for now this more primitive check is good enough.
+    # TODO(Juraj): Ideally this function should encapsulate a final state
+    # machine-like validator but for now this more primitive check is good
+    # enough.
     # Check syntax of the signature.
-    # Currently the smenatic check implicitly decides the syntactic check
-    #  as well, but later down the line the syntax/semantics
-    #  distinction might make sense.
+    # Currently the smenatic check implicitly decides the syntactic check as
+    # well, but later down the line the syntax/semantics distinction might make
+    # sense.
     is_correct_signature = _validate_dataset_signature_syntax(
         signature, dataset_schema
     )
@@ -194,6 +197,11 @@ def validate_dataset_signature(
     else:
         _LOG.warning("Syntax validation failed, skipping semantic validation.")
     return is_correct_signature
+
+
+# #############################################################################
+#
+# #############################################################################
 
 
 def _build_dataset_signature_from_args(
@@ -210,8 +218,8 @@ def _build_dataset_signature_from_args(
     schema_signature_list = dataset_schema["dataset_signature"].split(
         token_separator_char
     )
-    # Replace schema signature identifiers with the actual values
-    #  if an argument is missing and exception is raised.
+    # Replace schema signature identifiers with the actual values if an
+    # argument is missing and exception is raised.
     try:
         dataset_signature = list(map(lambda x: args[x], schema_signature_list))
     except KeyError as e:
@@ -232,6 +240,7 @@ def parse_dataset_signature_to_args(
         e.g. `bulk.airflow.resampled_1min.parquet.bid_ask.spot.v3.crypto_chassis.binance.v1_0_0`
     :param dataset_schema: dataset schema to parse against
     :return: signature arguments mapping, e.g.
+        ```
         {
             "download_mode": "bulk",
             "downloading_entity": "airflow",
@@ -244,6 +253,7 @@ def parse_dataset_signature_to_args(
             "exchange_id": "binance",
             "version": "v1_0_0"
         }
+        ```
     """
     hdbg.dassert_eq(validate_dataset_signature(signature, dataset_schema), True)
     token_separator = dataset_schema["token_separator_character"]
@@ -251,6 +261,11 @@ def parse_dataset_signature_to_args(
     values = signature.split(token_separator)
     args = {keys[i]: values[i] for i in range(len(keys))}
     return args
+
+
+# #############################################################################
+# S3 file interface.
+# #############################################################################
 
 
 def get_vendor_from_s3_path(s3_path: str) -> str:
@@ -279,8 +294,13 @@ def build_s3_dataset_path_from_args(
     raised.
 
     :param s3_base_path: Base S3 path to use, i.e.
-        's3://cryptokaizen-data'
-    :param s3_base_path: Base S3 path to use, i.e. 's3://cryptokaizen-data'
+    's3://cryptokaizen-data'
+     :param s3_base_path: Base S3 path to use, i.e.
+    's3://cryptokaizen-data'
+    :param s3_base_path: Base S3 path to use, i.e. 's3://cryptokaizen-
+        data'
+    :param s3_base_path: Base S3 path to use, i.e. 's3://cryptokaizen-
+        data'
     :param args: arguments to build the dataset signature from
     :param version: version of the dataset schema to use, if None,
         latest version
@@ -289,8 +309,8 @@ def build_s3_dataset_path_from_args(
     s3_path = s3_base_path
     schema = get_dataset_schema(version=version)
     s3_path = os.path.join(s3_path, schema["version"])
-    # TODO(Juraj): If preprocessing operations pile up,
-    #  divide them into separate functions.
+    # TODO(Juraj): If preprocessing operations pile up, divide them into
+    # separate functions.
     if _args.get("universe"):
         _args["universe"] = _args["universe"].replace(".", "_")
     dataset_signature = _build_dataset_signature_from_args(_args, schema)
@@ -303,6 +323,11 @@ def build_s3_dataset_path_from_args(
     )
     s3_path = os.path.join(s3_path, dataset_signature)
     return s3_path
+
+
+# #############################################################################
+# IM interface.
+# #############################################################################
 
 
 def get_im_db_table_name_from_signature(

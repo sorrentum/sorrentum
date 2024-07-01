@@ -332,16 +332,16 @@ def _docker_login_ecr() -> None:
 @task
 def docker_login(ctx, target_registry="aws_ecr.ck"):  # type: ignore
     """
-    Log in the target registry and skip if we are in sorrentum.
+    Log in the target registry and skip if we are in kaizenflow.
 
     :param target_registry: target Docker image registry to log in to
-        - "dockerhub.sorrentum": public Sorrentum Docker image registry
+        - "dockerhub.sorrentum": public Kaizenflow Docker image registry
         - "aws_ecr.ck": private AWS CK ECR
     """
-    # No login required as sorrentum container is accessible on the public
+    # No login required as kaizenflow container is accessible on the public
     # DockerHub registry.
-    if henv.execute_repo_config_code("get_name()") == "//sorr":
-        _LOG.warning("Skipping logging in for Sorrentum")
+    if henv.execute_repo_config_code("get_name()") == "//kaizen":
+        _LOG.warning("Skipping logging in for Kaizenflow")
         return
     hlitauti.report_task()
     # We run everything using `hsystem.system(...)` but `ctx` is needed

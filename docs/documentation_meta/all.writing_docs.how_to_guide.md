@@ -207,18 +207,18 @@
   etc.)
 - To do it correctly:
   - Place your screenshot in any comment window at GitHub
-    - <img width="770" alt="screenshot" src="https://github.com/sorrentum/sorrentum/assets/31514660/ade0b104-d162-40a8-9f0d-3edadf38c57e">
+    - <img width="770" alt="screenshot" src="https://github.com/kaizen-ai/kaizenflow/assets/31514660/ade0b104-d162-40a8-9f0d-3edadf38c57e">
     - This will upload the image to the GitHub cloud
     - You DO NOT have to publish a comment, the provided link is already ready
       to use!
   - Make sure your link has no not-English symbols in `alt` section
-    - <img width="778" alt="symbols" src="https://github.com/sorrentum/sorrentum/assets/31514660/6e54d66b-d45f-43f8-8bb6-b9c94217068e">
+    - <img width="778" alt="symbols" src="https://github.com/kaizen-ai/kaizenflow/assets/31514660/6e54d66b-d45f-43f8-8bb6-b9c94217068e">
     - They sometimes appear if your native PC language is not English
     - You can avoid it by giving the picture a name in English
     - Alternatively, you can just edit the `alt` section in the generated link -
       this will not corrupt the file
   - Place the generated and edited link to the markdown file
-    - <img width="461" alt="last" src="https://github.com/sorrentum/sorrentum/assets/31514660/a416e49d-2859-40d6-ad13-792e6304f402">
+    - <img width="461" alt="last" src="https://github.com/kaizen-ai/kaizenflow/assets/31514660/a416e49d-2859-40d6-ad13-792e6304f402">
 
 ## Improve your written English
 
@@ -334,6 +334,7 @@
       - The generated markdown may convert http links as `html` `<span>`
         objects. This hinders the readability of the `md` file. In this case,
         manually convert to a standard `http://` link:
+        TODO(Sameep): Update to KaizenFlow.
         - `[<span class="underline">https://www.sorrentum.org/</span>](https://www.sorrentum.org/)`
           -> `https://www.sorrentum.org/`
       - Replace the `html` `<img>` tag with a markdown link:

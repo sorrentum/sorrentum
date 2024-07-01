@@ -551,6 +551,37 @@ def gh_get_open_prs(repo: str) -> List[Dict[str, Any]]:
     return pull_requests
 
 
+def _get_failed_or_successful_workflow_run(
+    workflow_runs: List[Dict[str, Any]]
+) -> Optional[Dict[str, Any]]:
+    """
+    Get the most recent successful or failed workflow run.
+
+    :param workflow_runs: list of workflow runs
+    :return: the most recent successful or failed workflow run or None if not
+        found, e.g.,
+        ```
+        {
+            'conclusion': 'success',
+            'status': 'completed',
+            'url': 'https://github.com/cryptokaizen/cmamp/actions/runs/8714881296',
+            'workflowName': 'Allure fast tests'
+        }    
+        ```
+    """
+    # We assume that the workflow runs are sorted by time in descending order. 
+    # Therefore, we can iterate over the list and return the last successful 
+    # or failed run.
+    workflow_run_dict = None
+    for curr_workflow_run in workflow_runs:
+        if curr_workflow_run["conclusion"] in ["success", "failure"]:
+            # The last complete run found, exiting the loop. A run is considered
+            # complete if the "conclusion" field meets the current condition. 
+            workflow_run_dict = curr_workflow_run 
+            break
+    return workflow_run_dict 
+
+
 def gh_get_details_for_all_workflows(repo_list: List[str]) -> "pd.DataFrame":
     """
     Get status for all the workflows.
@@ -575,9 +606,10 @@ def gh_get_details_for_all_workflows(repo_list: List[str]) -> "pd.DataFrame":
         workflow_names = gh_get_workflow_type_names(repo_name)
         # For each workflow find the last run.
         for workflow_name in workflow_names:
-            # Get at least a few runs to compute the status; this is useful when the latest run is in progress, in this case
-            # the run before the latest one tells the status for a workflow.
-            limit = 2
+            # Get at least a few runs to compute the status; this is useful when
+            # the latest run is not completed, in this case the run before the
+            # latest one tells the status for a workflow.
+            limit = 5
             workflow_statuses = gh_get_workflow_details(
                 repo_name, workflow_name, gh_cols, limit
             )
@@ -590,13 +622,17 @@ def gh_get_details_for_all_workflows(repo_list: List[str]) -> "pd.DataFrame":
                     repo_name,
                 )
                 continue
-            if workflow_statuses[0]["status"] == "in_progress":
-                workflow_status = [workflow_statuses[1]]
-            else:
-                workflow_status = [workflow_statuses[0]]
-            hdbg.dassert_eq(1, len(workflow_status))
+            # Get the latest successful or failed workflow run.
+            workflow_status = _get_failed_or_successful_workflow_run(workflow_statuses)
+            if workflow_status is None:
+                _LOG.warning(
+                    "No successful or failed runs found for '%s', repo '%s', skipping the workflow",
+                    workflow_name,
+                    repo_name,
+                )
+                continue
             # Access the info of latest workflow run.
-            workflow_status = pd.DataFrame(workflow_status)
+            workflow_status = pd.DataFrame([workflow_status])
             workflow_status["repo_name"] = repo_name
             repo_dfs.append(workflow_status)
     # Collect per-repo tables into a single DataFrame.

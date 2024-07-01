@@ -63,6 +63,7 @@ def get_wall_clock_time() -> Optional["pd.Timestamp"]:
 # #############################################################################
 
 
+# TODO(Sameep): Redundant fuction replace by `hdatetime.timestamp_to_str()`.
 def to_timestamp_str(
     timestamp: "pd.Timestamp", include_msec: bool = False
 ) -> str:
@@ -115,7 +116,9 @@ def set_current_bar_timestamp(timestamp: "pd.Timestamp") -> None:
 
 
 def get_current_bar_timestamp(
-    *, as_str: bool = False, include_msec: bool = False,
+    *,
+    as_str: bool = False,
+    include_msec: bool = False,
 ) -> Optional[Union[str, "pd.Timestamp"]]:
     ret = _CURR_BAR_TIMESTAMP
     if _CURR_BAR_TIMESTAMP and as_str:

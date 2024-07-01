@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  pyspark_app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./Users/meghanakolanu/src/sorrentum1/sorrentum_sandbox/projects/Spring2024_Streaming_Word_Count_with_Apache_Spark_Streaming
+    environment:
+      - PYSPARK_PYTHON=python3
+    command: python spring2024_streaming_word_count_with_apache_spark_streaming.py
+

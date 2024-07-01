@@ -346,3 +346,50 @@ class TestGenerateAwsFiles(hunitest.TestCase):
         region=test_default_region
         """
         self.helper(file_name, expected)
+
+
+# #############################################################################
+
+
+class Test_get_s3_bucket_from_stage(hunitest.TestCase):
+    def test1(self) -> None:
+        """
+        Check for a valid stage.
+        """
+        # Define arguments.
+        stage = "test"
+        # Run.
+        actual = hs3.get_s3_bucket_from_stage(stage)
+        expected = "cryptokaizen-data-test"
+        self.assert_equal(actual, expected)
+
+    def test2(self) -> None:
+        """
+        Check for a valid stage and optional suffix.
+        """
+        # Define arguments.
+        stage = "preprod"
+        suffix = "suffix_test"
+        # Run.
+        actual = hs3.get_s3_bucket_from_stage(stage, add_suffix=suffix)
+        expected = "cryptokaizen-data.preprod/suffix_test"
+        self.assert_equal(actual, expected)
+
+    def test3(self) -> None:
+        """
+        Check Invalid stage.
+        """
+        # Define arguments.
+        stage = "Invalid"
+        # Run.
+        with self.assertRaises(AssertionError) as cm:
+            hs3.get_s3_bucket_from_stage(stage)
+        actual = str(cm.exception)
+        expected = r"""
+            * Failed assertion *
+            'Invalid' in '{'test': 'cryptokaizen-data-test', 'preprod': 'cryptokaizen-data.preprod', 'prod': 'cryptokaizen-data'}'
+             """
+        self.assert_equal(actual, expected, fuzzy_match=True)
+
+
+# #############################################################################

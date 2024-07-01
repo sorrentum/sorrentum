@@ -1,0 +1,13 @@
+version: '3'  # Specify the Docker Compose file format version
+
+services:
+  hadoop-streaming:  # Define a service/container named 'hadoop-streaming'
+    build: 
+      context: .  # Use the current directory as the build context for the Dockerfile
+      dockerfile: Dockerfile  # Use the Dockerfile named 'Dockerfile' for building the image
+
+    volumes:
+      # Mount the local input.txt file from the host to /usr/local/hadoop/input.txt inside the container
+      - ./data/input.txt:/usr/local/hadoop/input.txt
+
+ 

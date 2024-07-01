@@ -1,0 +1,14 @@
+services:
+# creates gremlin-server at port 8182
+  gremlin-server:
+    image: tinkerpop/gremlin-server
+    ports:
+      - "8182:8182"
+
+# creates gremlin-python after the gremlin-server is created
+  gremlin-python:
+    build:
+      context: .
+    depends_on:
+      - gremlin-server
+    command: ["./wait-for-it.sh", "gremlin-server:8182", "--", "python", "gremlin.py"]

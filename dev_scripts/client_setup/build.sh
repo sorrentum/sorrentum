@@ -8,7 +8,7 @@
 
 set -e
 
-# Difference btw Sorrentum and cmamp. Sorrentum people do not require aws
+# Difference btw Kaizenflow and cmamp. Kaizenflow people do not require aws
 # installation.
 # TODO(gp): Once we need to share data on S3 will need to re-enable.
 # Check if AWS CLI V2 is already installed.
@@ -82,5 +82,6 @@ if [[ $(uname) == "Darwin" ]]; then
     #echo "dive version="$(dive --version)
 fi;
 
+echo "# Installation successful"
 echo "# Configure your client with:"
 echo "> source dev_scripts/setenv_amp.sh"

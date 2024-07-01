@@ -12,9 +12,11 @@ export CK_AWS_PROFILE="ck"
 # These variables are propagated to Docker.
 export AM_ECR_BASE_PATH="665840871993.dkr.ecr.us-east-1.amazonaws.com"
 export AM_AWS_S3_BUCKET="alphamatic-data"
-# TODO(Grisha): Difference between `amp`, `cmamp` and `sorrentum`.
+# TODO(Grisha): Difference between `amp`, `cmamp` and `kaizenflow`.
 # Note: Do not modify during integration. Necessary for users with no access to
 # AWS ECR, pulling images from DockerHub.
+# TODO(Samarth): Rename sorrentum to kaizenflow once the dockerhub repo
+# is changed.
 export CK_ECR_BASE_PATH="sorrentum"
 export CK_AWS_S3_BUCKET="cryptokaizen-data"
 

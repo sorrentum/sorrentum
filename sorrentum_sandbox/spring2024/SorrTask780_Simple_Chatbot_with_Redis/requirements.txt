@@ -1,0 +1,6 @@
+Flask>=2.0.2
+transformers>=4.36
+tokenizers>=0.14.1
+Werkzeug==2.2.2
+torch==2.2.0
+redis==4.0.2

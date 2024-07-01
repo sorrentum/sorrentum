@@ -1,3 +1,4 @@
+import datetime
 import logging
 from typing import Tuple
 
@@ -149,7 +150,9 @@ class Test_convert_to_multiindex(hunitest.TestCase):
         1 <= 0
         ################################################################################
         """
-        self.assert_equal(actual_error_message, expected_error_message, fuzzy_match=True)
+        self.assert_equal(
+            actual_error_message, expected_error_message, fuzzy_match=True
+        )
 
     def test4(self) -> None:
         """
@@ -186,7 +189,9 @@ class Test_convert_to_multiindex(hunitest.TestCase):
                                                       names=[None, 'id']))' is '<class 'tuple'>' instead of '<class 'pandas.core.frame.DataFrame'>'
         ################################################################################
         """
-        self.assert_equal(actual_error_message, expected_error_message, fuzzy_match=True)
+        self.assert_equal(
+            actual_error_message, expected_error_message, fuzzy_match=True
+        )
 
     def test6(self) -> None:
         """
@@ -201,3 +206,131 @@ class Test_convert_to_multiindex(hunitest.TestCase):
         actual_df = dtfcorutil.convert_to_multiindex(df, asset_id_col)
         # Compare the result.
         self.assert_multiindex_columns_equal(expected_df_columns, actual_df)
+
+
+class Test_find_min_max_timestamps_from_intervals(hunitest.TestCase):
+    def test1(self) -> None:
+        """
+        Check for the case when no intervals are provided.
+        """
+        intervals = None
+        actual = dtfcorutil.find_min_max_timestamps_from_intervals(intervals)
+        expected = (None, None)
+        self.assertEqual(actual, expected)
+
+    def test2(self) -> None:
+        """
+        Check for a single interval where both endpoints are empty.
+        """
+        intervals = [(None, None)]
+        actual = dtfcorutil.find_min_max_timestamps_from_intervals(intervals)
+        expected = (None, None)
+        self.assertEqual(actual, expected)
+
+    def test3(self) -> None:
+        """
+        Check for a single interval with valid endpoints.
+        """
+        intervals = [
+            (
+                datetime.datetime(2022, 1, 1, 10, 0, 0),
+                datetime.datetime(2022, 1, 1, 11, 0, 0),
+            )
+        ]
+        actual = dtfcorutil.find_min_max_timestamps_from_intervals(intervals)
+        expected = (
+            datetime.datetime(2022, 1, 1, 10, 0, 0),
+            datetime.datetime(2022, 1, 1, 11, 0, 0),
+        )
+        self.assertEqual(actual, expected)
+
+    def test4(self) -> None:
+        """
+        Check for a single interval where both endpoints are the same.
+        """
+        intervals = [
+            (
+                pd.Timestamp(2022, 1, 1, 10, tz="UTC"),
+                pd.Timestamp(2022, 1, 1, 10, tz="UTC"),
+            )
+        ]
+        actual = dtfcorutil.find_min_max_timestamps_from_intervals(intervals)
+        expected = (
+            pd.Timestamp(2022, 1, 1, 10, tz="UTC"),
+            pd.Timestamp(2022, 1, 1, 10, tz="UTC"),
+        )
+        self.assertEqual(actual, expected)
+
+    def test5(self) -> None:
+        """
+        Check for multiple intervals with a mix of valid and empty endpoints.
+        """
+        intervals = [
+            (pd.Timestamp(2022, 1, 1, 10, tz="UTC"), None),
+            (None, pd.Timestamp(2022, 1, 1, 11, tz="UTC")),
+        ]
+        actual = dtfcorutil.find_min_max_timestamps_from_intervals(intervals)
+        expected = (None, None)
+        self.assertEqual(actual, expected)
+
+    def test6(self) -> None:
+        """
+        Check for multiple intervals with valid endpoints.
+        """
+        intervals = [
+            (
+                pd.Timestamp(2022, 1, 1, 10, tz="UTC"),
+                pd.Timestamp(2022, 1, 1, 11, tz="UTC"),
+            ),
+            (
+                pd.Timestamp(2022, 1, 1, 6, tz="UTC"),
+                pd.Timestamp(2022, 1, 1, 9, tz="UTC"),
+            ),
+        ]
+        actual = dtfcorutil.find_min_max_timestamps_from_intervals(intervals)
+        expected = (
+            pd.Timestamp(2022, 1, 1, 6, tz="UTC"),
+            pd.Timestamp(2022, 1, 1, 11, tz="UTC"),
+        )
+        self.assertEqual(actual, expected)
+
+    def test7(self) -> None:
+        """
+        Check for multiple intervals with valid endpoints of different time
+        zones.
+        """
+        intervals = [
+            (
+                pd.Timestamp(2022, 1, 1, 10, tz="UTC"),
+                pd.Timestamp(2022, 1, 1, 11, tz="UTC"),
+            ),
+            (
+                pd.Timestamp(2022, 1, 1, 10, tz="EST"),
+                pd.Timestamp(2022, 1, 1, 11, tz="EST"),
+            ),
+        ]
+        actual = dtfcorutil.find_min_max_timestamps_from_intervals(intervals)
+        expected = (
+            pd.Timestamp(2022, 1, 1, 10, tz="UTC"),
+            pd.Timestamp(2022, 1, 1, 11, tz="EST"),
+        )
+        self.assertEqual(actual, expected)
+
+    def test8(self) -> None:
+        """
+        Check for an interval with different endpoint types.
+        """
+        intervals = [
+            (
+                datetime.datetime(
+                    2022, 1, 1, 10, 0, 0, tzinfo=datetime.timezone.utc
+                ),
+                pd.Timestamp(2022, 1, 1, 11, tz="UTC"),
+            )
+        ]
+        actual = dtfcorutil.find_min_max_timestamps_from_intervals(intervals)
+        expected = (
+            datetime.datetime(2022, 1, 1, 10, 0, 0, tzinfo=datetime.timezone.utc),
+            pd.Timestamp(2022, 1, 1, 11, tz="UTC"),
+        )
+        self.assertEqual(actual, expected)

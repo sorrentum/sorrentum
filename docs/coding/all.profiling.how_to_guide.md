@@ -209,7 +209,7 @@ How to read a graph: https://nesi.github.io/perf-training/python-scatter/profili
 
 - You can find all of the examples below in action in the
   `amp/core/notebooks/time_memory_profiling_example.ipynb` [<span
-  class="underline">link</span>](https://github.com/sorrentum/sorrentum/blob/master/core/notebooks/time_memory_profiling_example.ipynb).
+  class="underline">link</span>](https://github.com/kaizen-ai/kaizenflow/blob/master/core/notebooks/time_memory_profiling_example.ipynb).
 
 ## Time profilers
 

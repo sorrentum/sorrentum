@@ -40,6 +40,7 @@ class Test_Cx_ProdReconciliation_TestCase(hunitest.TestCase):
         start_timestamp_as_str: str,
         end_timestamp_as_str: str,
         *,
+        tag: str = "",
         set_config_values: Optional[str] = None,
     ) -> None:
         """
@@ -49,6 +50,7 @@ class Test_Cx_ProdReconciliation_TestCase(hunitest.TestCase):
             e.g., `dataflow_orange.pipelines.C1.C1b_pipeline.C1b_DagBuilder`
         :param start_timestamp_as_str: system start timestamp as str, e.g., "20220101_130500"
         :param end_timestamp_as_str: system end timestamp as str, e.g., "20220101_130500"
+        :param tag: config tag, e.g., "config1"
         :param set_config_values: string representations of config values used
             to override simulation params and update research portoflio config when
             running the system reconciliation notebook. Config values are separated
@@ -82,6 +84,7 @@ class Test_Cx_ProdReconciliation_TestCase(hunitest.TestCase):
             f"--market-data-source-dir {dst_root_dir}",
             f"--mode {mode}",
             f"--stage {stage}",
+            f"--tag '{tag}'",
             "--no-prevent-overwriting",
             "--allow-update",
             "--incremental",
@@ -102,6 +105,7 @@ class Test_Cx_ProdReconciliation_TestCase(hunitest.TestCase):
             run_mode,
             start_timestamp_as_str,
             end_timestamp_as_str,
+            tag=tag,
         )
         system_log_dir_paths = reconcil.get_system_log_dir_paths(target_dir, mode)
         # Check configs. Since we don't have access to the System directly as it

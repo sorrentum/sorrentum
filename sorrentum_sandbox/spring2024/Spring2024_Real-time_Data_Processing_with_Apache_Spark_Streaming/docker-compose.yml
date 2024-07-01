@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  jupyter:
+    container_name: my_jupyter_container 
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./main_app.ipynb:/home/jovyan/main_app.ipynb
+    environment:
+      - "NOTEBOOK_TOKEN="

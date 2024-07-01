@@ -1,0 +1,14 @@
+{
+    "type": "record",
+    "name": "details",
+    "fields": [
+        {"name": "author", "type": ["string","null"], "doc": "Writer's name"},
+        {"name": "country", "type": ["string","null"], "doc": "Writer's country of origin"},
+        {"name": "imageLink", "type": ["string","null"], "doc": "link to book's cover"},
+        {"name": "language", "type": ["string","null"], "doc": "The language used in writing"},
+        {"name": "link", "type": ["string","null"], "doc": "Wikipidia page of the book"},
+        {"name": "pages", "type": ["int","null"], "doc": "Total page number"},
+        {"name": "title", "type": ["string","null"], "doc": "Book's name"},
+        {"name": "year", "type": ["int","null"], "doc": "Written year"}
+    ]
+}

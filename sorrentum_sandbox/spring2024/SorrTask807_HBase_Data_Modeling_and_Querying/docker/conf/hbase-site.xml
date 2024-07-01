@@ -1,0 +1,35 @@
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<configuration>
+
+  <property>
+    <name>hbase.rootdir</name>
+    <value>file://@DATA_DIR@</value>
+  </property>
+
+  <property>
+    <name>hbase.zookeeper.property.dataDir</name>
+    <value>@ZK_DIR@</value>
+  </property>
+
+<!--
+hbase.master.info.bindAddress
+hbase.regionserver.info.bindAddress
+
+
+  <property>
+    <name>hbase.master.ipc.address</name>
+    <value>@IP@</value>
+  </property>
+
+  <property>
+    <name>hbase.regionserver.ipc.address</name>
+    <value>@IP@</value>
+  </property>
+
+  <property>
+     <name>hbase.zookeeper.quorum</name>
+     <value>@IP@</value>
+  </property>
+-->
+
+</configuration>

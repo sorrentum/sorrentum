@@ -120,3 +120,52 @@ class Test_resample_with_weights_ohlcv_bars(hunitest.TestCase):
         df_ohlcv.index = pd.to_datetime(df_ohlcv.index)
         df_ohlcv.index.freq = "T"
         return df_ohlcv
+
+
+class Test_load_backtest_tiles(hunitest.TestCase):
+    def test_load_backtest_tiles1(self) -> None:
+        """
+        Loading backtest tiles to memory.
+        """
+        # Run.
+        load_all_tiles_in_memory = None
+        # Run.
+        actual = self.helper(load_all_tiles_in_memory)
+        # Check the shape.
+        self.assertEqual((11161, 6), actual.shape)
+        # Check the last 3 rows.
+        tail = actual.tail(3)
+        tail_str = hpandas.df_to_str(tail)
+        self.check_string(tail_str)
+
+    def helper(self, load_all_tiles_in_memory: Optional[int]) -> pd.DataFrame:
+        """
+        Helper function to test loading backtest tiles.
+        """
+        # Prepare data.
+        log_dir = self.get_log_dir()
+        start_date = pd.Timestamp("2024-01-01")
+        end_date = pd.Timestamp("2024-02-01")
+        asset_id_col = "asset_id"
+        cols = ["open", "garman_klass_vol", "feature"]
+        # Run.
+        actual = dtfmbanout.load_backtest_tiles(
+            log_dir, start_date, end_date, cols, asset_id_col
+        )
+        return actual
+
+    def get_log_dir(self) -> str:
+        """
+        Get the path to the backtest log directory.
+
+        To generate new test data:
+          - run the `Master_research_backtest_analyzer` notebook
+          - save the backtest log files to a directory
+          - upload the directory to the S3 bucket
+        """
+        # Copy test data from S3 to scratch space.
+        aws_profile = "ck"
+        s3_input_dir = self.get_s3_input_dir(use_only_test_class=True)
+        scratch_dir = self.get_scratch_space()
+        hs3.copy_data_from_s3_to_local_dir(s3_input_dir, scratch_dir, aws_profile)
+        return scratch_dir

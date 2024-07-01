@@ -72,4 +72,4 @@ extra_params={'ccxt_id': [2],
            '_submit_twap_child_order::child_order.submitted': Timestamp('2022-08-05 05:32:02-0400', tz='America/New_York'),
            '_submit_twap_child_order::get_open_positions.done': Timestamp('2022-08-05 05:32:00-0400', tz='America/New_York'),
            '_submit_twap_child_order::wave_id': 2,
-           '_submit_twap_orders::aligned_with_next_wave.end': Timestamp('2022-08-05 05:32:58-0400', tz='America/New_York')}}]
+           '_submit_twap_orders::aligned_with_next_wave.end': Timestamp('2022-08-05 05:32:55-0400', tz='America/New_York')}}]

@@ -651,7 +651,7 @@
 4. Scroll up the logs and see a report about the problem, notebooks failures
    will be displayed as well
    - E.g.,
-     <img width="756" src="https://github.com/sorrentum/sorrentum/assets/31514660/43a2854e-ae4e-450d-95fd-f16df0a53c79">
+     <img width="756" src="https://github.com/kaizen-ai/kaizenflow/assets/31514660/43a2854e-ae4e-450d-95fd-f16df0a53c79">
 
 # Running tests on GH Actions
 

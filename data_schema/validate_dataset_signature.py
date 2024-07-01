@@ -1,16 +1,17 @@
 #!/usr/bin/env python
 """
 Perform syntactic and semantic validation of a specified dataset signature.
-Signature is validated by the latest dataset schema version. Syntax validation
-checks if the signature is not malformed.
 
-    - If the schema specifies dataset signature as {data_type}.{asset_type},
-      then ohlcv.futures is a valid signatue, but ohlcv-futures is not.
+Signature is validated by the latest dataset schema version.
+
+Syntax validation checks if the signature is not malformed.
+- If the schema specifies dataset signature as `{data_type}.{asset_type}`, then
+  `ohlcv.futures` is a valid signatue, but `ohlcv-futures` is not.
+
 Semantic validation checks if the signature tokens are correct.
-
-    - If the schema specifies allowed values for data_type = ["ohlcv", "bid_ask"],
-      then for dataset signature {data_type}.{asset_type} ohlcv.futures is a valid
-      signature, but bidask.futures is not.
+- If the schema specifies allowed values for `data_type = ["ohlcv", "bid_ask"]`,
+  then for dataset signature `{data_type}.{asset_type}` `ohlcv.futures` is a valid
+  signature, but `bidask.futures` is not.
 
 Use as:
 > data_schema/validate_dataset_signature.py \

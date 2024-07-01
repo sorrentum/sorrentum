@@ -1,0 +1,40 @@
+version: '3.7'
+
+services:
+  neo4j:
+    image: neo4j:4.2.3-enterprise
+    container_name: "neo-gds"
+    #Commented out as it is no longer needed, but shows how to specify volumes for Neo4j to access directly
+    #volumes: Commented out as is no longer needed
+      #- ./sh_nw:/data
+      #- ./sh_nw:/var/lib/neo4j/import
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
+      - NEO4J_AUTH=neo4j/1234
+      - NEO4JLABS_PLUGINS=["apoc", "graph-data-science"]
+      - apoc.import.file.enabled=true
+      - apoc.export.file.enabled=true
+      - apoc.export.json.all=true
+      # Adjust memory settings as needed
+    networks:
+      - neo_net
+
+  jupyterlab:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    user: root  
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./notebooks:/home/jovyan/work/analysis
+      - ./sh_nw:/home/jovyan/work/data
+    networks:
+      - neo_net
+
+
+networks:
+  neo_net:

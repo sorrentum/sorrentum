@@ -103,9 +103,9 @@
 - These emails look like:    
         
         Samarth KaPatel <notifications@github.com>    
-        to Review, sorrentum/sorrentum    
+        to Review, kaizen-ai/kaizenflow    
 
-        @samarth9008 requested your review on: #436 Update Signing_up_for_Sorrentum.md.    
+        @samarth9008 requested your review on: #436 Update Signing_up_for_Kaizenflow.md.    
         __    
         Reply to this email directly, view it on GitHub, or unsubscribe.    
         You are receiving this because your review was requested.        

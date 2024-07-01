@@ -18,8 +18,7 @@ import helpers.hpandas as hpandas
 _LOG = logging.getLogger(__name__)
 
 
-# TODO(gp): -> private
-def generate_limit_order_price(
+def _generate_limit_order_price(
     df: pd.DataFrame,
     bid_col: str,
     ask_col: str,
@@ -243,17 +242,20 @@ def generate_limit_orders_and_estimate_execution(
     :param df: datetime-indexed dataframe with price data
     :param bid_col: bid col for estimating buy limit order execution
     :param ask_col: ask col for estimating sell limit order execution
-    :param buy_reference_price_col: reference price col for buy limit orders
+    :param buy_reference_price_col: reference price col for buy limit
+        orders
     :param buy_spread_frac_offset: amount to add to buy reference price
-    :param sell_reference_price_col: reference price col for sell limit orders
-    :param sell_spread_frac_offset: amount to add to sell reference price
-    :param subsample_freq: as in `generate_limit_order_price()`
-    :param freq_offset: as in `generate_limit_order_price()`
-    :param ffill_limit: as in `generate_limit_order_price()`
-    :param tick_decimals: as in `generate_limit_order_price()`
+    :param sell_reference_price_col: reference price col for sell limit
+        orders
+    :param sell_spread_frac_offset: amount to add to sell reference
+        price
+    :param subsample_freq: as in `_generate_limit_order_price()`
+    :param freq_offset: as in `_generate_limit_order_price()`
+    :param ffill_limit: as in `_generate_limit_order_price()`
+    :param tick_decimals: as in `_generate_limit_order_price()`
     :return: dataframe with limit order price and execution cols
     """
-    limit_order_prices = generate_limit_order_price(
+    limit_order_prices = _generate_limit_order_price(
         df,
         bid_col,
         ask_col,
@@ -339,8 +341,8 @@ def compute_bid_ask_execution_quality(
     :param ask_col: top-of-book ask price col
     :param buy_trade_price_col: price at which a "buy" was executed
     :param sell_trade_price_col: price at which a "sell" was executed
-    :return: dataframe with several notions of execution quality, in notional
-        amounts and relative amounts (bps or pct)
+    :return: dataframe with several notions of execution quality, in
+        notional amounts and relative amounts (bps or pct)
     """
     data = []
     # Compute midpoint and spread.

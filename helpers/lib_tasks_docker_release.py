@@ -362,7 +362,7 @@ def docker_tag_push_multi_build_local_image_as_dev(  # type: ignore
     :param local_base_image: base name of a local image,
         e.g., *****.dkr.ecr.us-east-1.amazonaws.com/amp
     :param target_registry: target Docker image registry to push the image to
-        - "dockerhub.sorrentum": public Sorrentum Docker image registry
+        - "dockerhub.sorrentum": public kaizenflow Docker image registry
         - "aws_ecr.ck": private AWS CK ECR
     :param container_dir_name: directory where the Dockerfile is located
     """
@@ -560,7 +560,7 @@ def docker_build_prod_image(  # type: ignore
             image_versioned_prod += f"-{user_tag}"
         # Add head hash to the prod image name.
         image_versioned_prod += f"-{head_hash}"
-        
+
     else:
         image_versioned_prod = hlitadoc.get_image(
             base_image, "prod", prod_version
@@ -841,6 +841,36 @@ def docker_create_candidate_image(ctx, task_definition, user_tag="", region="eu-
     # Register new task definition revision with updated image URL.
     cmd = f'invoke docker_cmd -c "{exec_name} -t {task_definition} -i {tag} -r {region}"'
     hlitauti.run(ctx, cmd)
+
+
+@task
+def copy_ecs_task_definition_image_url(ctx, src_task_def, dst_task_def):  # type: ignore
+    """
+    Copy image URL from one task definition to another.
+
+    Currently the implementation assumes the source region is Stockholm
+    and destination #TODO(Juraj): Because this is the configuration we
+    need at the moment.
+
+    :param src_task_def: source ECS task definition (located in eu-
+        north-1)
+    :param dst_task_def: destination ECS task definition (located in ap-
+        northeast-1)
+    """
+    # TODO(Vlad): Import locally to avoid redundant dependencies.
+    # See for detals: https://github.com/cryptokaizen/cmamp/issues/8086.
+    import helpers.haws as haws
+
+    #
+    _ = ctx
+    src_image_url = haws.get_task_definition_image_url(
+        src_task_def, region="eu-north-1"
+    )
+    # We have cross-region replication enabled in ECR, all images live in both regions.
+    dst_image_url = src_image_url.replace("eu-north-1", "ap-northeast-1")
+    haws.update_task_definition(
+        dst_task_def, dst_image_url, region="ap-northeast-1"
+    )
 
 
 @task

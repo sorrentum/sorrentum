@@ -1,0 +1,8 @@
+FROM python:3
+
+COPY client.py .
+
+RUN pip install pyzmq
+
+CMD ["python", "./client.py"]
+

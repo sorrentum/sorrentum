@@ -1,0 +1,38 @@
+# Use a Java base image
+FROM openjdk:8-jdk
+
+# Credit information
+LABEL maintainer="dave@dajobe.org"
+
+# Set environment variables for HBase version and home directory
+ENV HBASE_VERSION=1.0.0 \
+    HBASE_HOME=/opt/hbase \
+    DATA_DIR=/data/hbase \
+    LOGS_DIR=/data/logs \
+    ZK_DIR=/data/zookeeper \
+    HBASE_SERVER=/opt/hbase/bin/hbase
+
+# Set the working directory
+WORKDIR ${HBASE_HOME}
+
+# Install dependencies and HBase, setup permissions
+RUN apt-get update \
+    && apt-get install -y iproute2 --no-install-recommends \
+    && mkdir -p ${DATA_DIR} ${LOGS_DIR} ${ZK_DIR} \
+    && curl -SL "http://archive.apache.org/dist/hbase/hbase-${HBASE_VERSION}/hbase-${HBASE_VERSION}-bin.tar.gz" | tar -xz --strip-components=1 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/hbase.tar.gz
+
+# Copy configuration files
+COPY conf/hbase-site.xml ${HBASE_HOME}/conf/hbase-site.xml
+COPY conf/zoo.cfg ${HBASE_HOME}/conf/zoo.cfg
+COPY hbase-server /opt/hbase-server
+
+# Make the hbase-server script executable
+RUN chmod +x /opt/hbase-server
+
+# Expose necessary ports
+EXPOSE 8080 9090 9095 2181 16010
+
+# Start HBase server
+CMD ["/opt/hbase-server"]

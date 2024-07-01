@@ -39,6 +39,7 @@ import core.config as cconfig
 import core.plotting as coplotti
 import dataflow.core as dtfcore
 import dataflow.model as dtfmod
+import helpers.hdatetime as hdateti
 import helpers.hdbg as hdbg
 import helpers.henv as henv
 import helpers.hpandas as hpandas
@@ -85,17 +86,9 @@ portfolio_dir = reconcil.get_data_type_system_log_path(
 config_file_name = "system_config.output.values_as_strings.pkl"
 system_config_path = os.path.join(system_log_dir, config_file_name)
 system_config = cconfig.load_config_from_pickle(system_config_path)
-# TODO(Dan): Deprecate after switch to updated config logs CmTask6627.
-hdbg.dassert_in("dag_runner_config", system_config)
-if isinstance(system_config["dag_runner_config"], tuple):
-    bar_duration = reconcil.extract_bar_duration_from_pkl_config(system_log_dir)
-else:
-    hdbg.dassert_isinstance(system_config, cconfig.Config)
-    bar_duration_in_secs = system_config["dag_runner_config"][
-        "bar_duration_in_secs"
-    ]
-    bar_duration_in_mins = int(int(bar_duration_in_secs) / 60)
-    bar_duration = f"{bar_duration_in_mins}T"
+# Get bar duration.
+bar_duration_in_secs = reconcil.get_bar_duration_from_config(system_config)
+bar_duration = hdateti.convert_seconds_to_pandas_minutes(bar_duration_in_secs)
 # %%
 dag_builder_ctor_as_str = (
     "dataflow_lemonade.pipelines.C12.C12a_pipeline.C12a_DagBuilder"
