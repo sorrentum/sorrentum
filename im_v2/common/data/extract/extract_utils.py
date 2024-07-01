@@ -413,11 +413,44 @@ def _download_exchange_data_to_db_with_timeout(
     download_exchange_data_to_db(args, exchange_class)
 
 
+def _should_add_timestamp(
+    timestamp: int, currency_pair: str, timestamps_dict: Dict[str, Any]
+) -> bool:
+    """
+    Determine if a timestamp should be added to the timestamps dictionary.
+
+    :param timestamp: Timestamp of the OHLCV data point
+    :param currency_pair: Currency pair of the data_point
+    :param timestamps_dict: Dictionary to store the latest_downloaded
+        timestamp for the currency_pair.
+    :return: True if timestamp is new or missed before, False otherwise.
+    """
+    # Backfill timestamps which got missed due to delay from Binance.
+    is_missed_timestamp = (
+        timestamp
+        not in timestamps_dict[currency_pair]["all_downloaded_timestamp"]
+        and timestamp
+        < timestamps_dict[currency_pair]["latest_downloaded_timestamp"]
+    )
+    if is_missed_timestamp:
+        _LOG.info(
+            "Backfilling Missing timestamp=%s for currency_pair=%s",
+            timestamp,
+            currency_pair,
+        )
+    # The timestamp is added if it is missed or it is the latest timestamp.
+    return (
+        is_missed_timestamp
+        or timestamps_dict[currency_pair]["latest_downloaded_timestamp"]
+        < timestamp
+    )
+
+
 def _is_fresh_data_point(
     currency_pair: str,
     data_point: Dict[Any, Any],
     data_type: str,
-    timestamps_dict: Dict[str, str],
+    timestamps_dict: Dict[str, Any],
     start_time_unix_epoch: int,
 ) -> Union[bool, Dict]:
     """
@@ -477,16 +510,37 @@ def _is_fresh_data_point(
         end_download_timestamp_unix = hdateti.convert_timestamp_to_unix_epoch(
             end_download_timestamp
         )
-        for ohlcv_data in data_point["ohlcv"]:
+        # Set the limit for the number of data points to ingest.
+        ingestion_limit = 10
+        # Initialize `timestamps_dict`.
+        if currency_pair not in timestamps_dict:
+            timestamps_dict[currency_pair] = {}
+            timestamps_dict[currency_pair]["latest_downloaded_timestamp"] = -1
+            timestamps_dict[currency_pair]["all_downloaded_timestamp"] = []
+        for ohlcv_data in data_point["ohlcv"][-ingestion_limit:]:
             timestamp = ohlcv_data[0]
             # Check download timestamp greater than 1 minute (60000ms) than the timestamp.
             if timestamp + 60000 <= end_download_timestamp_unix:
-                if (
-                    currency_pair not in timestamps_dict
-                    or timestamps_dict[currency_pair] < timestamp
+                if _should_add_timestamp(
+                    timestamp, currency_pair, timestamps_dict
                 ):
                     new_data_point["ohlcv"].append(ohlcv_data)
-                    timestamps_dict[currency_pair] = timestamp
+                    timestamps_dict[currency_pair][
+                        "latest_downloaded_timestamp"
+                    ] = timestamp
+                    timestamps_dict[currency_pair][
+                        "all_downloaded_timestamp"
+                    ].append(timestamp)
+                    if (
+                        len(
+                            timestamps_dict[currency_pair][
+                                "all_downloaded_timestamp"
+                            ]
+                        )
+                        > ingestion_limit
+                    ):
+                        # Remove older timestamps to preserve the length.
+                        timestamps_dict[currency_pair]["all_downloaded_timestamp"].pop(0)
         if len(new_data_point["ohlcv"]) > 0:
             return True, timestamps_dict, new_data_point
     elif data_type == "ohlcv_from_trades":
@@ -724,23 +778,9 @@ async def _download_websocket_realtime_for_one_exchange_periodically(
             hdbg.dassert_set_eq(
                 currency_pairs, downloaded_currency_pairs, only_warning=True
             )
-            # TODO(Juraj): experimental feature, the problem is speed for now.
-            # data_buffer_to_resample.append(df)
             imvcddbut.save_data_to_db(
                 df, data_type, db_connection, db_table, str(tz)
             )
-            # TODO(Juraj): experimental feature, the problem is speed for now.
-            # if args.resample_bid_ask_data_to_1min and pd.Timestamp.now(tz) > next_bid_ask_resampling_threshold:
-            #    with htimer.TimedScope(logging.DEBUG, "# Resample 1-minute of raw data"):
-            #        df_resampled = imvcdttrut.transform_and_resample_rt_bid_ask_data(
-            #            pd.concat(data_buffer_to_resample)
-            #        )
-            # imvcddbut.save_data_to_db(
-            #    df_resampled, data_type, db_connection, db_resampled_table, str(tz), add_knowledge_timestamp=False
-            # )
-            # Reset resampling variables to start over.
-            # data_buffer_to_resample = []
-            # next_bid_ask_resampling_threshold += pd.Timedelta(minutes=1)
             # Empty buffer after persisting the data.
             data_buffer = []
         # Determine actual sleep time needed based on the difference

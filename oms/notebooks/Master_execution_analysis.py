@@ -21,6 +21,7 @@
 # %load_ext autoreload
 # %autoreload 2
 import logging
+import os
 
 import numpy as np
 import pandas as pd
@@ -36,13 +37,13 @@ import helpers.hdbg as hdbg
 import helpers.henv as henv
 import helpers.hpandas as hpandas
 import helpers.hprint as hprint
+import im_v2.ccxt.utils as imv2ccuti
 import im_v2.common.universe as ivcu
 import oms.broker.ccxt.ccxt_aggregation_functions as obccagfu
 import oms.broker.ccxt.ccxt_execution_quality as obccexqu
 import oms.broker.ccxt.ccxt_logger as obcccclo
 import oms.child_order_quantity_computer.child_order_quantity_computer_instances as ocoqccoqci
 import oms.order.order_converter as oororcon
-import reconciliation.sim_prod_reconciliation as rsiprrec
 
 # %%
 hdbg.init_logger(verbosity=logging.INFO)
@@ -65,15 +66,24 @@ if config is None:
     system_log_dir = "/shared_data/ecs/test/system_reconciliation/C12a/prod/20240219_150900.20240219_160600/system_log_dir.manual/process_forecasts"
     id_col = "asset_id"
     price_col = "close"
-    universe_version = "v7.5"
+    universe_version = "v8.1"
     vendor = "CCXT"
     mode = "trade"
-    test_asset_id = 1464553467
-    bar_duration = "3T"
-    child_order_execution_freq = "60S"
+    test_asset_id = 1020313424
+    bar_duration = "5T"
+    child_order_execution_freq = "10S"
     use_historical = True
     system_config_dir = system_log_dir.rstrip("/process_forecasts")
-    table_name = rsiprrec.extract_table_name_from_pkl_config(system_config_dir)
+    # Load pickled SystemConfig.
+    config_path = os.path.join(
+        system_config_dir, "system_config.output.values_as_strings.pkl"
+    )
+    system_config = cconfig.load_config_from_pickle(config_path)
+    # Get table name from SystemConfig.
+    table_name = system_config[
+        "market_data_config", "im_client_config", "table_name"
+    ]
+    #
     config_dict = {
         "meta": {
             "id_col": id_col,
@@ -328,17 +338,27 @@ ohlcv_bars = dtfamsysc.load_and_resample_ohlcv_data(
 hpandas.df_to_str(ohlcv_bars, num_rows=5, log_level=logging.INFO)
 
 # %% [markdown]
+# ## Load universe and get symbol/asset_id mappings
+
+# %%
+# Get the universe to map asset_id's.
+universe = ivcu.get_vendor_universe(
+    "CCXT", "trade", version=universe_version, as_full_symbol=True
+)
+# Get the asset_id/symbol mapping.
+asset_id_to_symbol_mapping = ivcu.build_numerical_to_string_id_mapping(universe)
+# Get the symbol/asset_id mapping.
+symbol_to_asset_id_mapping = {
+    imv2ccuti.convert_full_symbol_to_binance_symbol(symbol): asset_id
+    for asset_id, symbol in asset_id_to_symbol_mapping.items()
+}
+
+# %% [markdown]
 # ## Load exchange tick sizes by asset id
 
 # %%
-# Create a mapping between binance full symbol and asset_id.
-binance_full_symbol_to_asset_id_mapping = dict(
-    zip(fills_df.symbol, fills_df.asset_id)
-)
-# Load exchange markets and restrict to assets traded.
-exchange_markets = data["exchange_markets"].loc[
-    binance_full_symbol_to_asset_id_mapping.keys()
-]
+# Load exchange markets and restrict to the asset universe.
+exchange_markets = data["exchange_markets"].loc[symbol_to_asset_id_mapping.keys()]
 exchange_markets.head(3)
 
 # %%
@@ -346,9 +366,7 @@ exchange_markets.head(3)
 price_tick_srs = exchange_markets["precision"].apply(lambda x: x["price"])
 price_tick_srs = price_tick_srs.apply(lambda x: 10**-x)
 # Map index to the asset_id.
-price_tick_srs.index = price_tick_srs.index.map(
-    binance_full_symbol_to_asset_id_mapping
-)
+price_tick_srs.index = price_tick_srs.index.map(symbol_to_asset_id_mapping)
 price_tick_srs.head(3)
 
 # %% [markdown]
@@ -426,11 +444,6 @@ no_response_orders["error_msg"] = no_response_orders["extra_params"].apply(
 # %%
 # Check the error messages for child orders that did not come through.
 # Display error messages grouped by symbol.
-# Get the universe to map asset_id's.
-universe = ivcu.get_vendor_universe(
-    "CCXT", "trade", version=universe_version, as_full_symbol=True
-)
-asset_id_to_symbol_mapping = ivcu.build_numerical_to_string_id_mapping(universe)
 no_response_orders["full_symbol"] = no_response_orders["asset_id"].map(
     asset_id_to_symbol_mapping
 )
@@ -557,7 +570,7 @@ if "wave_id" in child_order_df.columns:
 # %% run_control={"marked": false}
 # Map symbol to asset ID.
 ccxt_fills["asset_id"] = ccxt_fills["symbol"].apply(
-    lambda x: binance_full_symbol_to_asset_id_mapping[x]
+    lambda x: symbol_to_asset_id_mapping[x]
 )
 # Convert `datetime` column from string to timestamp.
 ccxt_fills["datetime"] = ccxt_fills["datetime"].apply(

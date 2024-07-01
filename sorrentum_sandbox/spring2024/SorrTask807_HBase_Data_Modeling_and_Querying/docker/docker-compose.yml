@@ -1,0 +1,48 @@
+services:
+  hbase:
+    build: 
+      context: .
+      dockerfile: Dockerfile_hbase
+    image: hbase-image:latest
+    container_name: hbase-docker
+    hostname: hbase-docker
+    ports:
+      - "2181:2181"   # Zookeeper
+      - "8080:8080"   # REST API
+      - "8085:8085"   # REST Web UI
+      - "9090:9090"   # Thrift API
+      - "9095:9095"   # Thrift Web UI
+      - "16010:16010" # Master UI 
+    volumes:
+      - hbase-data:/data       	
+    networks:
+      - app-network       
+    restart: unless-stopped
+    
+  notebook:
+    build:
+      context: .
+      dockerfile: Dockerfile_notebook
+    image: notebook-image:latest
+    container_name: notebook-server
+    user: "0:0" 
+    ports:
+      - "8888:8888"
+    volumes:
+      - .:/home/jovyan/work
+    environment:
+      - HBASE_HOST=hbase-docker
+    depends_on:
+      - hbase
+    networks:
+      - app-network
+    command: ["start-notebook.py", "--NotebookApp.token=''", "--NotebookApp.password=''"]
+    
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  hbase-data:
+    driver: local
+    

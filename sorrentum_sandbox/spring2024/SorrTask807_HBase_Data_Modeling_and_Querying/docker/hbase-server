@@ -1,0 +1,30 @@
+#!/bin/bash
+# Start HBase
+#  1) thrift API/Web UI
+#  2) hbase master (which runs the local region server)
+
+data_dir=/data/hbase
+logs_dir=/data/logs
+zk_dir=/data/zookeeper
+
+# If this a volume the subdirs may not exist yet
+mkdir -p $data_dir $logs_dir $zk_dir
+
+sed -i "s,^hbase.log.dir=.*,hbase.log.dir=$logs_dir," \
+    /opt/hbase/conf/log4j.properties
+
+ip=`ip addr show eth0 | grep 'inet ' | cut -d/ -f1 | awk '{print $2}'`
+
+sed -i -e "s,@DATA_DIR@,$data_dir,g" \
+    -e "s,@ZK_DIR@,$zk_dir,g" \
+    -e "s,@IP@,$ip,g" /opt/hbase/conf/hbase-site.xml
+
+sed -i "s,@IP@,$ip,g" /opt/hbase/conf/zoo.cfg
+
+# Thrift server (background)
+# Ports: 9090 API and 9095 UI
+$HBASE_SERVER thrift start > $logs_dir/hbase-thrift.log 2>&1 &
+
+# Master server (Foreground) that also starts the region server
+# Ports: Master: 60000 API, 60010 UI; 2181 ZK;  Region: 60020 API, 60030 UI
+exec $HBASE_SERVER master start 2>&1 | tee $logs_dir/hbase-master.log

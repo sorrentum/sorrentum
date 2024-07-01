@@ -1,5 +1,9 @@
 # Keep this in sync with `dev_scripts/client_setup/requirements.txt`.
 invoke
+# Restricted because of CmTask8340
+# https://github.com/cryptokaizen/cmamp/issues/8340
+# See https://github.com/psf/requests/issues/6707 for more details.
+requests <= 2.31.0
 # Restricted to < 7 because of CmTask6488.
 # https://github.com/cryptokaizen/cmamp/issues/6488
 # See `https://github.com/docker/docker-py/issues/3194` for more details.
@@ -8,6 +12,6 @@ docker-compose >= 1.29.0
 invoke >= 1.5.0
 poetry
 # For `invoke run_qa_tests` during a Docker image flow. See CmTask4949.
-pytest >= "6.0.0"
+pytest >= 6.0.0
 s3fs  # For tools like `publish_notebook.py`.
 tqdm

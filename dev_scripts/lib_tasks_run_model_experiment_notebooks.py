@@ -20,18 +20,21 @@ import dev_scripts.lib_tasks_run_model_experiment_notebooks as dsltrmeno
 
 import logging
 import os
+from typing import Optional
 
+import pandas as pd
 from invoke import task
 
 import core.config as cconfig
+import helpers.hdatetime as hdateti
 import helpers.hdbg as hdbg
 import helpers.henv as henv
+import helpers.hgit as hgit
 import helpers.hio as hio
 import helpers.hprint as hprint
 import helpers.hs3 as hs3
 import helpers.hsystem as hsystem
 import im_v2.common.universe as ivcu
-import reconciliation as reconcil
 import reconciliation.sim_prod_reconciliation as rsiprrec
 
 _LOG = logging.getLogger(__name__)
@@ -41,23 +44,32 @@ def _run_notebook(
     config_builder: str,
     base_dst_dir: str,
     notebook_path: str,
+    analysis_notebooks_results_dir: str,
     *,
     abort_on_error: bool = False,
 ) -> None:
     """
     Run analysis notebooks and store it in a specified location.
 
+    :param config_builder: config builder to build the notebook config
     :param base_dst_dir: top most directory to store data into
     :param notebook_path: relative path to the notebook to execute,
         assuming amp is a submodule.
+    :param analysis_notebooks_results_dir: root dir to store analysis
+        notebooks results
+    :param abort_on_error: if True, abort the execution if an error is
+        encountered during the notebook execution
     """
     # TODO(Juraj): this does not work in the cmamp prod container when ran
     #  via AWS ECS.
     # hdbg.dassert(
     #    hserver.is_inside_docker(), "This is runnable only inside Docker."
     # )
-    # Set directory to store results locally.
-    results_dir = "."
+    # Create dir for the particular notebook to store the results.
+    # Example of the dir: `../system_log_dir.manual/analysis_notebooks/Master_broker_debugging/`
+    notebook_file_name = os.path.basename(notebook_path)
+    notebook_file_name = notebook_file_name.split(".")[0]
+    results_dir = os.path.join(analysis_notebooks_results_dir, notebook_file_name)
     cmd_txt = []
     opts = "--tee --no_suppress_output --num_threads 'serial' "
     if abort_on_error:
@@ -96,25 +108,50 @@ def _run_notebook(
             notebook_path,
         )
         _run_notebook(
-            config_builder, base_dst_dir, notebook_path, abort_on_error=True
+            config_builder,
+            base_dst_dir,
+            notebook_path,
+            analysis_notebooks_results_dir,
+            abort_on_error=True,
         )
         return
     # Move the ipynb.html file to s3.
     if hs3.is_s3_path(base_dst_dir):
         notebook_name = os.path.basename(notebook_path)
         notebook_name = os.path.splitext(notebook_name)[0]
-        find_and_move_html_file_to_s3(notebook_name, results_dir, base_dst_dir)
+        find_and_move_html_file_to_s3(
+            notebook_name,
+            results_dir,
+            base_dst_dir,
+            analysis_notebooks_results_dir=analysis_notebooks_results_dir,
+        )
     else:
         hio.create_dir(base_dst_dir, incremental=True)
         hdbg.dassert_dir_exists(base_dst_dir)
         _LOG.info("Copying results from '%s' to '%s'", results_dir, base_dst_dir)
         hsystem.system(script_name, suppress_output=False, log_level="echo")
-    # Delete the temp dir
-    hio.delete_dir(results_dir)
+
+
+def _get_analysis_notebooks_file_path(analysis_notebooks_results_dir) -> str:
+    """
+    Get path to the CSV file storing links to the published notebooks.
+
+    :param analysis_notebooks_results_dir: root dir to store analysis
+        notebooks results
+    """
+    hdbg.dassert_dir_exists(analysis_notebooks_results_dir)
+    analysis_notebooks_file_path = os.path.join(
+        analysis_notebooks_results_dir, "analysis_notebooks_links.csv"
+    )
+    return analysis_notebooks_file_path
 
 
 def find_and_move_html_file_to_s3(
-    notebook_name: str, results_dir: str, base_dst_dir: str
+    notebook_name: str,
+    results_dir: str,
+    base_dst_dir: str,
+    *,
+    analysis_notebooks_results_dir: Optional[str] = None,
 ) -> None:
     """
     Find the notebook_name.*.html file in results_dir and move to s3.
@@ -122,6 +159,8 @@ def find_and_move_html_file_to_s3(
     :param notebook_name: html notebook name which needs to be publish
     :param results_dir: dir where html notebook is saved
     :param base_dst_dir: s3 dst path to publish
+    :param analysis_notebooks_results_dir: if present, it is used as the
+        root directory to store analysis notebook results
     """
     html_bucket_path = henv.execute_repo_config_code("get_html_bucket_path()")
     cmd = f"find {results_dir} -type f -name '{notebook_name}.*.html'"
@@ -137,6 +176,23 @@ def find_and_move_html_file_to_s3(
         )
         url_bucket_path = dir_to_url[html_bucket_path]
         url = s3_dst_path.replace(html_bucket_path, url_bucket_path)
+        if analysis_notebooks_results_dir is not None:
+            analysis_notebooks_file_path = _get_analysis_notebooks_file_path(
+                analysis_notebooks_results_dir
+            )
+            # Add url to the csv file along with notebook name.
+            notebook_info = pd.DataFrame(
+                [[notebook_name, url]], columns=["Notebook Name", "URL"]
+            )
+            # Set header to False if the file already exists to avoid repeating the
+            # header in the output.
+            header = (
+                False if os.path.exists(analysis_notebooks_file_path) else True
+            )
+            notebook_info.to_csv(
+                analysis_notebooks_file_path, mode="a", index=False, header=header
+            )
+            _LOG.info(f"URL - {url} added to {analysis_notebooks_file_path}")
         cmd = f"""
         # To open the notebook from a web-browser open a link:
         {url}
@@ -145,7 +201,7 @@ def find_and_move_html_file_to_s3(
 
 
 def publish_system_reconciliation_notebook(
-    system_log_dir: str, base_dst_dir: str
+    system_log_dir: str, base_dst_dir: str, analysis_notebooks_results_dir: str
 ) -> None:
     """
     system_reconciliation notebook is already created with `reconcile_run_all`
@@ -153,6 +209,8 @@ def publish_system_reconciliation_notebook(
 
     :param system_log_dir: refer `run_notebooks()` for param description
     :param base_dst_dir: refer `run_notebooks()` for param description
+    :param analysis_notebooks_results_dir: root dir to store analysis
+        notebooks results
     """
     reconciliation_notebook_path = system_log_dir.replace(
         "system_reconciliation", "prod_reconciliation"
@@ -167,11 +225,127 @@ def publish_system_reconciliation_notebook(
     )
     notebook_name = "Master_system_reconciliation_fast"
     find_and_move_html_file_to_s3(
-        notebook_name, reconciliation_notebook_path, base_dst_dir
+        notebook_name,
+        reconciliation_notebook_path,
+        base_dst_dir,
+        analysis_notebooks_results_dir=analysis_notebooks_results_dir,
     )
 
 
+def _publish_master_trading_notebook(
+    timestamp_dir: str,
+    analysis_notebooks_results_dir: str,
+    *,
+    mark_as_latest: bool = True,
+    cleanup: bool = True,
+):
+    """
+    Run the trading system report notebook and publish it to S3.
+
+    :param timestamp_dir: a dir where results for a specific run are stored
+    :param analysis_notebooks_results_dir: root dir to store analysis notebooks
+        results
+    :param mark_as_latest: if True, mark the dashboard as `latest`, otherwise
+        just publish a timestamped copy
+    :param cleanup: if True, cleanup the temporary directory after the
+        notebook is published. This is useful for local runs intended for
+        debugging purposes
+    """
+    # TODO(Vlad): Factor out common code with the
+    # `helpers.lib_tasks_gh.publish_buildmeister_dashboard_to_s3()`.
+    amp_abs_path = hgit.get_amp_abs_path()
+    run_notebook_script_path = os.path.join(
+        amp_abs_path, "dev_scripts/notebooks/run_notebook.py"
+    )
+    notebook_path = os.path.join(
+        amp_abs_path, "oms/notebooks/Master_trading_system_report.ipynb"
+    )
+    # Publish the notebook.
+    # Do not pass S3 path to `run_notebook.py` with `--publish` flag to preserve
+    # an access to the notebook via a stable link. So publish it to a temporary
+    # local directory and then copy to S3 without timestamp in the name.
+    dst_local_dir = os.path.join(amp_abs_path, "tmp.notebooks")
+    analysis_notebooks_file_path = _get_analysis_notebooks_file_path(
+        analysis_notebooks_results_dir
+    )
+    config_builder = (
+        "oms.execution_analysis_configs."
+        f'get_master_trading_system_report_notebook_config("{timestamp_dir}", "{analysis_notebooks_file_path}")'
+    )
+    cmd_run_txt = [
+        run_notebook_script_path,
+        f"--notebook {notebook_path}",
+        f"--config_builder '{config_builder}'",
+        f"--dst_dir '{dst_local_dir}'",
+        "--publish",
+        "--num_threads serial",
+    ]
+    cmd_run_txt = " ".join(cmd_run_txt)
+    hsystem.system(cmd_run_txt)
+    # Get HTML file name.
+    tmp_local_dir_name = os.path.join(amp_abs_path, "tmp.notebooks")
+    pattern = "Master_trading_system_report.0*.html"
+    only_files = True
+    use_relative_paths = False
+    local_html_files = hio.listdir(
+        tmp_local_dir_name,
+        pattern,
+        only_files=only_files,
+        use_relative_paths=use_relative_paths,
+    )
+    # Assert if more than 1 file is returned.
+    hdbg.dassert_eq(
+        len(local_html_files),
+        1,
+        f"Found more than one file in {tmp_local_dir_name} - {local_html_files}",
+    )
+    local_html_file_path = local_html_files[0]
+    html_bucket_path = henv.execute_repo_config_code("get_html_bucket_path()")
+    s3_build_path = os.path.join(html_bucket_path, "notebooks", "Master_Analysis")
+    aws_profile = "ck"
+    if mark_as_latest:
+        # Copy the dashboard notebook to S3 as latest build.
+        s3_latest_build_path = os.path.join(
+            s3_build_path, "Master_trading_system_report.latest.html"
+        )
+        hs3.copy_file_to_s3(
+            local_html_file_path, s3_latest_build_path, aws_profile
+        )
+        _print_html_url_by_s3_path(s3_latest_build_path)
+    # Copy the timestamped version of the dashboard notebook to S3.
+    local_html_file_name = os.path.basename(local_html_file_path)
+    s3_timestamped_build_path = os.path.join(s3_build_path, local_html_file_name)
+    hs3.copy_file_to_s3(
+        local_html_file_path, s3_timestamped_build_path, aws_profile
+    )
+    _print_html_url_by_s3_path(s3_timestamped_build_path)
+    if cleanup:
+        hio.delete_dir(tmp_local_dir_name)
+
+
+def _print_html_url_by_s3_path(s3_file_name: str) -> None:
+    """
+    Print the URL of the HTML file stored in S3.
+
+    :param s3_file_name: S3 path to the HTML file
+    """
+    # TODO(Vlad): Factor out common code with the
+    # `dev_scripts.notebooks.publish_notebook.py`.
+    html_bucket_path = henv.execute_repo_config_code("get_html_bucket_path()")
+    dir_to_url = henv.execute_repo_config_code("get_html_dir_to_url_mapping()")
+    url_bucket_path = dir_to_url[html_bucket_path]
+    url = s3_file_name.replace(html_bucket_path, url_bucket_path)
+    cmd = f"""
+    # To open the notebook from a web-browser open a link:
+    {url}
+    """
+    print(hprint.dedent(cmd))
+
+
 # TODO(Grisha): Consider to move the script to `oms.`
+# TODO(Grisha): running analysis notebooks, publishing the reconciliation
+# notebook and running the trading report notebook should become separate
+# functions. Otherwise, all the `if-else` inside the function is hard to follow.
 @task
 def run_notebooks(
     ctx, system_log_dir: str, base_dst_dir: str, run_mode: str = "all_notebooks"
@@ -197,14 +371,29 @@ def run_notebooks(
         skip_reconciliation: skip `Master_system_reconciliation_fast` notebook
         reconciliation_only: only publish `Master_system_reconciliation_fast`
             - only applicable for full system run, assumes that reconciliation flow has been run
+        trading_report_only: only publish `Master_trading_system_report`
+            - assumes that reconciliation flow has been run
     """
     hdbg.dassert_in(
-        run_mode, ["all_notebooks", "skip_reconciliation", "reconciliation_only"]
+        run_mode,
+        [
+            "all_notebooks",
+            "skip_reconciliation",
+            "reconciliation_only",
+            "trading_report_only",
+        ],
     )
     _ = ctx
     # `system_log_dir` is in a form `.../system_log_dir/process_forecasts` and
     # we want to extract `.../system_log_dir` to find SystemConfig.
     full_system_log_dir, _ = os.path.split(system_log_dir)
+    # Create dir to store analysis notebooks results.
+    # TODO(Grisha): consider moving the analysis notebooks data outside of the
+    # system_log_dir since they are not a part of the system run.
+    analysis_notebooks_results_dir = os.path.join(
+        full_system_log_dir, "analysis_notebooks"
+    )
+    hio.create_dir(analysis_notebooks_results_dir, incremental=True)
     # TODO(Sonaal): get the `system_config.output.values_as_strings.pkl` from
     # some constant.
     config_path = os.path.join(
@@ -222,49 +411,25 @@ def run_notebooks(
     if is_full_system_run:
         # Load pickled SystemConfig.
         system_config = cconfig.load_config_from_pickle(config_path)
-        hdbg.dassert_in("dag_runner_config", system_config)
-        if isinstance(system_config["dag_runner_config"], tuple):
-            _LOG.warning("Reading Config v1.0")
-            bar_duration = rsiprrec.extract_bar_duration_from_pkl_config(
-                full_system_log_dir
-            )
-            universe_version = rsiprrec.extract_universe_version_from_pkl_config(
-                full_system_log_dir
-            )
-            child_order_execution_freq = (
-                rsiprrec.extract_execution_freq_from_pkl_config(
-                    full_system_log_dir
-                )
-            )
-            price_col = rsiprrec.extract_price_column_name_from_pkl_config(
-                full_system_log_dir
-            )
-            table_name = reconcil.extract_table_name_from_pkl_config(
-                full_system_log_dir
-            )
-        else:
-            # TODO(Grisha): preserve types when reading SystemConfig back and
-            #  remove all the post-processing.
-            _LOG.warning("Reading Config v2.0")
-            hdbg.dassert_isinstance(system_config, cconfig.Config)
-            # Extract bar duration in seconds from a loaded system config.
-            bar_duration_in_secs = system_config["dag_runner_config"][
-                "bar_duration_in_secs"
-            ]
-            # Convert to a string representation of bar duration in minutes
-            # in order to use it in the pipeline.
-            bar_duration_in_mins = int(int(bar_duration_in_secs) / 60)
-            bar_duration = f"{bar_duration_in_mins}T"
-            universe_version = system_config["market_data_config"][
-                "universe_version"
-            ]
-            child_order_execution_freq = system_config[
-                "process_forecasts_node_dict"
-            ]["process_forecasts_dict"]["order_config"]["execution_frequency"]
-            price_col = system_config["portfolio_config"]["mark_to_market_col"]
-            table_name = system_config["market_data_config"]["im_client_config"][
-                "table_name"
-            ]
+        # Get param values from SystemConfig.
+        bar_duration_in_secs = rsiprrec.get_bar_duration_from_config(
+            system_config
+        )
+        bar_duration = hdateti.convert_seconds_to_pandas_minutes(
+            bar_duration_in_secs
+        )
+        universe_version = system_config["market_data_config", "universe_version"]
+        child_order_execution_freq = system_config[
+            "process_forecasts_node_dict",
+            "process_forecasts_dict",
+            "order_config",
+            "execution_frequency",
+        ]
+        price_col = system_config["portfolio_config", "mark_to_market_col"]
+        table_name = system_config[
+            "market_data_config", "im_client_config", "table_name"
+        ]
+        #
         _LOG.debug("Using bar_duration=%s from SystemConfig", bar_duration)
         _LOG.debug(
             "Using universe_version=%s from SystemConfig", universe_version
@@ -285,6 +450,10 @@ def run_notebooks(
         # Logged after the experiment to avoid potential gaps.
         bid_ask_data_source = "logged_after_experiment"
     else:
+        # Setting default values for `table_name` and `price_col`.
+        # These initializations are essential for the execution analysis notebook to run smoothly.
+        table_name = "ccxt_ohlcv_futures"
+        price_col = "close"
         args_logfile = os.path.join(system_log_dir, "args.json")
         hdbg.dassert_file_exists(args_logfile)
         args_dict = hio.from_json(args_logfile)
@@ -338,13 +507,28 @@ def run_notebooks(
     # create list of notebooks to run.
     notebooks = []
     if run_mode in ["all_notebooks", "skip_reconciliation"]:
-        notebooks = [bid_ask, master_exec, broker_debug]
         if is_full_system_run:
             notebooks.append(portfolio_recon)
+        # Sometimes the bid/ask notebook fails for long runs. It's the last one
+        # so that we run the rest before failing on the bid/ask notebook.
+        notebooks.extend([broker_debug, master_exec, bid_ask])
     if is_full_system_run and run_mode in [
         "all_notebooks",
         "reconciliation_only",
     ]:
-        publish_system_reconciliation_notebook(system_log_dir, base_dst_dir)
+        publish_system_reconciliation_notebook(
+            system_log_dir, base_dst_dir, analysis_notebooks_results_dir
+        )
     for notebook, config in notebooks:
-        _run_notebook(config, base_dst_dir, notebook)
+        _run_notebook(
+            config, base_dst_dir, notebook, analysis_notebooks_results_dir
+        )
+    # Publish master trading report notebook.
+    # The trading report notebook requires all the analysis notebooks to be finished.
+    # TODO(Grisha): move the trading report piece into a separate function.
+    if is_full_system_run and run_mode == "trading_report_only":
+        _LOG.debug("Running only Master_trading_system_report notebook")
+        timestamp_dir = os.path.split(full_system_log_dir)[0]
+        _publish_master_trading_notebook(
+            timestamp_dir, analysis_notebooks_results_dir, mark_as_latest=True
+        )

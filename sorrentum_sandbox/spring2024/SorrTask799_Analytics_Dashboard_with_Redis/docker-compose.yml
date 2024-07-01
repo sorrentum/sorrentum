@@ -1,0 +1,10 @@
+version: '3'
+services:
+  streamlit:
+    build: .
+    ports:
+      - "8501:8501"
+    depends_on:
+      - redis
+  redis:
+    image: redis

@@ -82,5 +82,6 @@ if [[ $(uname) == "Darwin" ]]; then
     #echo "dive version="$(dive --version)
 fi;
 
+echo "# Installation successful"
 echo "# Configure your client with:"
 echo "> source dev_scripts/setenv_amp.sh"

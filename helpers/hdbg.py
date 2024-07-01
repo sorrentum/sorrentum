@@ -961,7 +961,6 @@ def init_logger(
             traceback.print_stack()
         return
     #
-    print(INFO + f": > cmd='{get_command_line()}'")
     ch = logging.StreamHandler(sys.stdout)
     ch.setLevel(verbosity)
     # Set the formatter.
@@ -1008,11 +1007,12 @@ def init_logger(
         root_logger.addHandler(file_handler)
         file_handler.setFormatter(formatter)
         #
-        print(INFO + f": Saving log to file '{log_filename}'")
+        _LOG.info("Saving log to file '%s'", {log_filename})
     #
     _LOG.debug("Effective logging level=%s", _LOG.getEffectiveLevel())
     # Shut up chatty modules.
     hloggin.shutup_chatty_modules(verbose=False)
+    _LOG.info("> cmd='%s'", get_command_line())
     #
     # test_logger()
 

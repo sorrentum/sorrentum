@@ -7,7 +7,6 @@ import im_v2.common.data.client.im_raw_data_client as imvcdcimrdc
 """
 
 import logging
-import os
 from typing import List, Optional
 
 import pandas as pd
@@ -25,25 +24,13 @@ import im_v2.common.universe.universe as imvcounun
 
 _LOG = logging.getLogger(__name__)
 
-# TODO(Juraj): hack applied until a solution for #CmTask6620 is found.
-_AWS_REGION = os.environ.get("CK_AWS_DEFAULT_REGION", "eu-north-1")
-# TODO(Juraj): This might be moved to helpers.
-_S3_BUCKET_BY_STAGE = {
-    "test": "cryptokaizen-data-test",
-    # TODO(Juraj): hack applied until a solution for #CmTask6620 is found.
-    "preprod": "cryptokaizen-data-tokyo.preprod"
-    if _AWS_REGION == "ap-northeast-1"
-    else "cryptokaizen-data.preprod",
-    "prod": "cryptokaizen-data",
-}
-
 
 class RawDataReader:
     """
     Load the raw data from S3 or a DB based on the dataset signature.
     """
 
-    def __init__(self, signature: str, *, stage: str = "prod"):
+    def __init__(self, signature: str, *, stage: str = "prod", **kwargs):
         """
         Constructor.
 
@@ -59,6 +46,7 @@ class RawDataReader:
             signature, self.dataset_schema
         )
         self.stage = stage
+        self.s3_bucket_name = hs3.get_s3_bucket_from_stage(self.stage, **kwargs)
         self.dataset_epoch_unit = imvcdttrut.get_vendor_epoch_unit(
             self.args["vendor"], self.args["data_type"]
         )
@@ -344,8 +332,7 @@ class RawDataReader:
         """
         Get the path to Parquet file on S3.
         """
-        hdbg.dassert_in(self.stage, _S3_BUCKET_BY_STAGE)
-        s3_bucket = f"s3://{_S3_BUCKET_BY_STAGE[self.stage]}"
+        s3_bucket = f"s3://{self.s3_bucket_name}"
         s3_path = dsdascut.build_s3_dataset_path_from_args(s3_bucket, self.args)
         return s3_path
 
@@ -356,8 +343,7 @@ class RawDataReader:
         :param currency_pair: currency pair to load
         :return: s3 path
         """
-        hdbg.dassert_in(self.stage, _S3_BUCKET_BY_STAGE)
-        s3_bucket = f"s3://{_S3_BUCKET_BY_STAGE[self.stage]}"
+        s3_bucket = f"s3://{self.s3_bucket_name}"
         _LOG.debug("s3_bucket=", s3_bucket)
         s3_path = dsdascut.build_s3_dataset_path_from_args(s3_bucket, self.args)
         _LOG.debug("s3_path=", s3_path)
@@ -370,17 +356,12 @@ class RawDataReader:
 
         This can help in filtering.
         """
-        s3_path = self._build_s3_pq_file_path()
-        pattern = "currency_pair=*/year=*/month=*/day=*"
-        only_files = True
-        use_relative_paths = True
-        files = hs3.listdir(
-            s3_path, pattern, only_files, use_relative_paths, aws_profile="ck"
-        )
-        if len(files) != 0:
+        if (self.args["data_type"] in ["bid_ask", "trades"]) and self.args[
+            "action_tag"
+        ] != "resampled_1min":
             partition_mode = "by_year_month_day"
         else:
-            partition_mode = None
+            partition_mode = "by_year_month"
         return partition_mode
 
 

@@ -330,6 +330,19 @@ class Test_limit_price_computer_using_volatility(hunitest.TestCase):
         """
         self.assert_equal(actual, expected, fuzzy_match=True)
 
+    def test_invalid_side1(self) -> None:
+        """
+        Check that an assertion is raised when a non-existent side value is
+        supplied.
+        """
+        with self.assertRaises(ValueError) as cm:
+            self._calculate_price_helper(
+                "non-existent-side", 0.5, 1464553467, 3, pd.Timedelta("1T"), 0
+            )
+        act = str(cm.exception)
+        exp = r"Invalid side='non-existent-side'"
+        self.assert_equal(act, exp, fuzzy_match=True)
+
     def _calculate_price_helper(
         self,
         side: str,

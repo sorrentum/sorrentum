@@ -70,7 +70,7 @@ else:
     amp_dir = hgit.get_amp_abs_path()
     dir_name = os.path.join(
         amp_dir,
-        "/shared_data/backtest.danya/build_tile_configs.C11a.ccxt_v8_1-all.6T.2023-06-01_2024-01-31.ins.run0/tiled_results",
+        "/shared_data/backtest.danya/build_tile_configs.C11a.ccxt_v8_1-all.120T.2023-08-01_2024-01-31.ins.run0/tiled_results",
     )
     # Create a subfolder to store portfolio metrics.
     # The subfolder is marked by the datetime of the run, e.g.
@@ -84,11 +84,12 @@ else:
     default_config_dict = {
         "dir_name": dir_name,
         "output_dir_name": output_dir_name,
-        "start_date": datetime.date(2023, 6, 1),
+        "start_date": datetime.date(2023, 8, 1),
         "end_date": datetime.date(2024, 1, 31),
         "asset_id_col": "asset_id",
         "pnl_resampling_frequency": "D",
-        "rule": "6T",
+        "rule": "120T",
+        "forecast_evaluator_class_name": "ForecastEvaluatorFromPrices",
         "im_client_config": {
             "vendor": "ccxt",
             "universe_version": "v8.1",
@@ -113,10 +114,10 @@ else:
             "burn_in_bars": 3,
             "compute_extended_stats": True,
             "target_dollar_risk_per_name": 1.0,
-            "modulate_using_prediction_magnitude": False,
-            "prediction_abs_threshold": 0.3,
+            "modulate_using_prediction_magnitude": True,
+            "prediction_abs_threshold": 0.0,
         },
-        "column_names": {
+        "forecast_evaluator_kwargs": {
             "price_col": "open",
             "volatility_col": "garman_klass_vol",
             "prediction_col": "feature",
@@ -128,7 +129,7 @@ else:
         "load_all_tiles_in_memory": True,
         "sweep_param": {
             "keys": (
-                "column_names",
+                "forecast_evaluator_kwargs",
                 "price_col",
             ),
             "values": [
@@ -221,7 +222,7 @@ tile_df.head(3)
 # Since the Optimizer cannot work with NaN values in the price column,
 # check the presence of NaN values and return the first and last date
 # where NaNs are encountered.
-price_col = default_config["column_names"]["price_col"]
+price_col = default_config["forecast_evaluator_kwargs"]["price_col"]
 price_df = tile_df[price_col]
 try:
     hdbg.dassert_eq(price_df.isna().sum().sum(), 0)
@@ -236,7 +237,7 @@ except AssertionError as e:
 
 # %% run_control={"marked": true}
 # If NaNs in the feature column are found, replace them with 0.
-feature_col = default_config["column_names"]["prediction_col"]
+feature_col = default_config["forecast_evaluator_kwargs"]["prediction_col"]
 tile_df[feature_col].isna().sum()
 
 # %%
@@ -288,7 +289,7 @@ rule_n_minutes
 weights_dict = {
     "first_min_past": [0.0] * 1 + [1.0] + [0.0] * (rule_n_minutes - 2),
     "second_min_past": [0.0] * 2 + [1.0] + [0.0] * (rule_n_minutes - 3),
-    "third_min_past": [0.0] * 3 + [1.0] + [0.0] * (rule_n_minutes - 4),
+    #     "third_min_past": [0.0] * 3 + [1.0] + [0.0] * (rule_n_minutes - 4),
 }
 
 # %%
@@ -296,13 +297,17 @@ for weight_rule, weights in weights_dict.items():
     #
     resampled_price_col = dtfmod.resample_with_weights_ohlcv_bars(
         ohlcv_data,
-        default_config["column_names", "price_col"],
+        default_config["forecast_evaluator_kwargs", "price_col"],
         rule,
         weights,
     )
     # Rename the resampled price column.
     res_price_col = "_".join(
-        ["resampled", weight_rule, default_config["column_names", "price_col"]]
+        [
+            "resampled",
+            weight_rule,
+            default_config["forecast_evaluator_kwargs", "price_col"],
+        ]
     )
     resampled_price_col.columns = resampled_price_col.columns.set_levels(
         [res_price_col], level=0
@@ -326,8 +331,9 @@ portfolio_df_dict = {}
 bar_metrics_dict = {}
 for key, config in config_dict.items():
     if config["load_all_tiles_in_memory"]:
-        fep = dtfmod.ForecastEvaluatorFromPrices(
-            **config["column_names"].to_dict(),
+        fep = dtfmod.get_forecast_evaluator(
+            config["forecast_evaluator_class_name"],
+            **config["forecast_evaluator_kwargs"].to_dict(),
         )
         # Create a subdirectory for the current config, e.g.
         # "optimizer_config_dict:constant_correlation_penalty=1".
@@ -350,9 +356,9 @@ for key, config in config_dict.items():
             config["start_date"],
             config["end_date"],
             config["asset_id_col"],
-            config["column_names"]["price_col"],
-            config["column_names"]["volatility_col"],
-            config["column_names"]["prediction_col"],
+            config["forecast_evaluator_kwargs"]["price_col"],
+            config["forecast_evaluator_kwargs"]["volatility_col"],
+            config["forecast_evaluator_kwargs"]["prediction_col"],
             asset_ids=None,
             annotate_forecasts_kwargs=config[
                 "annotate_forecasts_kwargs"

@@ -253,7 +253,8 @@ def convert_csv_dir_to_pq_dir(
     Apply `convert_csv_to_pq()` to all files in `csv_dir`.
 
     :param csv_dir: directory storing CSV files on S3 or local
-    :param pq_dir: target directory to save PQ files (only local filesystem)
+    :param pq_dir: target directory to save PQ files (only local
+        filesystem)
     :param header: header specification of CSV
     :param normalizer: function to apply to df before writing to PQ
     """

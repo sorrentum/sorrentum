@@ -102,7 +102,7 @@
 - Avoid emails any time possible
 
   - Communication should happen on GitHub around specific Issues
-  - Read [General Rules of Collaboration](General_rules_of_collaboration.md) for
+  - Read [General Rules of Collaboration](/docs/work_organization/all.team_collaboration.how_to_guide.md) for
     more details
 
 - Use Telegram chat when you are blocked on something

@@ -62,8 +62,9 @@ else:
     default_config_dict = {
         # Provide a list of experiment output dirs for analysis.
         "system_log_dirs": [
-            "/shared_data/backtest.danya/build_tile_configs.C11a.ccxt_v8_1-all.5T.2023-01-01_2024-03-20.ins.run0/portfolio_dfs/20240331_204543/optimizer_config_dict:constant_correlation_penalty=5000",
-            "/shared_data/backtest.danya/build_tile_configs.C11a.ccxt_v8_1-all.5T.2023-01-01_2024-03-20.ins.run0/portfolio_dfs/20240331_204543/optimizer_config_dict:constant_correlation_penalty=10000",
+"/shared_data/backtest.danya/build_tile_configs.C11a.ccxt_v8_1-all.5T.2023-08-01_2024-03-31.ins.run0/portfolio_dfs/20240501_183113/forecast_evaluator_kwargs:optimizer_config_dict:transaction_cost_penalty=1.4",
+"/shared_data/backtest.danya/build_tile_configs.C11a.ccxt_v8_1-all.5T.2023-08-01_2024-03-31.ins.run0/portfolio_dfs/20240501_183113/forecast_evaluator_kwargs:optimizer_config_dict:transaction_cost_penalty=1.6",
+"/shared_data/backtest.danya/build_tile_configs.C11a.ccxt_v8_1-all.5T.2023-08-01_2024-03-31.ins.run0/portfolio_dfs/20240501_183113/forecast_evaluator_kwargs:optimizer_config_dict:transaction_cost_penalty=1.8",
         ],
         "pnl_resampling_frequency": "D",
     }
@@ -76,10 +77,9 @@ print(default_config)
 
 # %%
 # Load the portfolio metrics.
-afe = dtfmod.AbstractForecastEvaluator()
 bar_metrics_dict = {}
 for index, system_log_dir in enumerate(default_config["system_log_dirs"]):
-    bar_metrics = afe.load_portfolio_stats(system_log_dir)
+    bar_metrics = dtfmod.AbstractForecastEvaluator.load_portfolio_stats(system_log_dir)
     bar_metrics_dict[index] = bar_metrics
 portfolio_stats_df = pd.concat(bar_metrics_dict, axis=1)
 

@@ -1,8 +1,8 @@
-INFO: > cmd='/venv/bin/invoke pytest_repro --file-name=$GIT_ROOT/helpers/test/outcomes/Test_pytest_repro_end_to_end.test5/input/log.txt --show-stacktrace --script-name $GIT_ROOT/helpers/test/outcomes/Test_pytest_repro_end_to_end.test5/tmp.scratch/tmp.pytest_repro.sh'
+HH:MM:SS - INFO  hdbg.py init_logger:1015                               > cmd='/venv/bin/invoke pytest_repro --file-name=$GIT_ROOT/helpers/test/outcomes/Test_pytest_repro_end_to_end.test5/input/log.txt --show-stacktrace --script-name $GIT_ROOT/helpers/test/outcomes/Test_pytest_repro_end_to_end.test5/tmp.scratch/tmp.pytest_repro.sh'
 ## pytest_repro:
 HH:MM:SS - INFO  lib_tasks_pytest.py pytest_repro:{LINE_NUM}                   Reading file_name='$GIT_ROOT/helpers/test/outcomes/Test_pytest_repro_end_to_end.test5/input/log.txt'
 HH:MM:SS - INFO  lib_tasks_pytest.py pytest_repro:{LINE_NUM}                   Reading failed tests from file '$GIT_ROOT/helpers/test/outcomes/Test_pytest_repro_end_to_end.test5/input/log.txt'
-HH:MM:SS - INFO  lib_tasks_pytest.py pytest_repro:{LINE_NUM}                   Found 2 failed pytest 'tests' target(s); to reproduce run:
+HH:MM:SS - INFO  lib_tasks_pytest.py pytest_repro:{LINE_NUM}                  Found 2 failed pytest 'tests' target(s); to reproduce run:
 pytest dataflow/pipelines/E8/test/test_E8a_pipeline.py::TestE8a_ModelBuilder::test1
 pytest dataflow/pipelines/E8/test/test_E8c_pipeline.py::TestE8c_ModelBuilder::test1
 

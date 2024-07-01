@@ -227,7 +227,9 @@ class CcxtLogger:
             "extra_params"
         ].get("ccxt_id", -1)
         # Get current timestamp and bar.
-        wall_clock_time_str = hdateti.timestamp_to_str(get_wall_clock_time())
+        wall_clock_time_str = hdateti.timestamp_to_str(
+            get_wall_clock_time(), include_msec=True
+        )
         bar_timestamp = hwacltim.get_current_bar_timestamp(
             as_str=True, include_msec=True
         )
@@ -379,7 +381,9 @@ class CcxtLogger:
         """
         # Generate file name based on the bar timestamp.
         # TODO(gp): P1, @all Factor out the logic to format the timestamps.
-        wall_clock_time = hdateti.timestamp_to_str(get_wall_clock_time())
+        wall_clock_time = hdateti.timestamp_to_str(
+            get_wall_clock_time(), include_msec=True
+        )
         bar_timestamp = hwacltim.get_current_bar_timestamp(
             as_str=True, include_msec=True
         )

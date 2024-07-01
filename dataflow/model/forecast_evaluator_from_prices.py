@@ -5,7 +5,6 @@ import dataflow.model.forecast_evaluator_from_prices as dtfmfefrpr
 """
 import collections
 import logging
-import os
 from typing import Any, Dict, List, Optional, Tuple
 
 import pandas as pd
@@ -13,9 +12,7 @@ import pandas as pd
 import core.finance as cofinanc
 import dataflow.model.abstract_forecast_evaluator as dtfmabfoev
 import helpers.hdbg as hdbg
-import helpers.hio as hio
 import helpers.hpandas as hpandas
-import helpers.hparquet as hparque
 import helpers.hprint as hprint
 
 _LOG = logging.getLogger(__name__)
@@ -56,6 +53,8 @@ class ForecastEvaluatorFromPrices(dtfmabfoev.AbstractForecastEvaluator):
             - the `prediction_col` is a prediction of vol-adjusted returns
               (presumably with volatility given by `volatility_col`)
         """
+        # Initialize dataframe columns.
+        super().__init__(price_col, volatility_col, prediction_col)
         if _LOG.isEnabledFor(logging.DEBUG):
             _LOG.debug(
                 hprint.to_str(
@@ -63,15 +62,6 @@ class ForecastEvaluatorFromPrices(dtfmabfoev.AbstractForecastEvaluator):
                     " sell_price_col"
                 )
             )
-        # Initialize dataframe columns.
-        hdbg.dassert_isinstance(price_col, str)
-        self._price_col = price_col
-        #
-        hdbg.dassert_isinstance(volatility_col, str)
-        self._volatility_col = volatility_col
-        #
-        hdbg.dassert_isinstance(prediction_col, str)
-        self._prediction_col = prediction_col
         # Process optional columns.
         if spread_col is not None:
             hdbg.dassert_isinstance(spread_col, str)
@@ -96,276 +86,6 @@ class ForecastEvaluatorFromPrices(dtfmabfoev.AbstractForecastEvaluator):
             if _LOG.isEnabledFor(logging.DEBUG):
                 _LOG.debug("Initialized with sell_price_col=%s", sell_price_col)
         self._sell_price_col = sell_price_col
-
-    def save_portfolio(
-        self,
-        df: pd.DataFrame,
-        log_dir: str,
-        **kwargs: Dict[str, Any],
-    ) -> str:
-        """
-        Save portfolio state to the file system.
-
-        The dir structure of the data output is:
-        ```
-        - holdings_shares
-        - holdings_notional
-        - executed_trades_shares
-        - executed_trades_notional
-        - pnl
-        - prediction
-        - price
-        - statistics
-        - volatility
-        ```
-
-        :param df: as in `compute_portfolio()`
-        :param log_dir: directory for writing log files of portfolio state
-        :param kwargs: forwarded to `compute_portfolio()`
-        :return: name of log files with timestamp
-        """
-        hdbg.dassert(log_dir, "Must specify `log_dir` to log portfolio.")
-        derived_dfs = self.compute_portfolio(
-            df,
-            **kwargs,
-        )
-        last_timestamp = df.index[-1]
-        hdbg.dassert_isinstance(last_timestamp, pd.Timestamp)
-        last_timestamp_str = last_timestamp.strftime("%Y%m%d_%H%M%S")
-        file_name = f"{last_timestamp_str}.parquet"
-        #
-        ForecastEvaluatorFromPrices._write_df(
-            df[self._price_col], log_dir, "price", file_name
-        )
-        ForecastEvaluatorFromPrices._write_df(
-            df[self._volatility_col], log_dir, "volatility", file_name
-        )
-        ForecastEvaluatorFromPrices._write_df(
-            df[self._prediction_col], log_dir, "prediction", file_name
-        )
-        ForecastEvaluatorFromPrices._write_df(
-            derived_dfs["holdings_shares"], log_dir, "holdings_shares", file_name
-        )
-        ForecastEvaluatorFromPrices._write_df(
-            derived_dfs["holdings_notional"],
-            log_dir,
-            "holdings_notional",
-            file_name,
-        )
-        ForecastEvaluatorFromPrices._write_df(
-            derived_dfs["executed_trades_shares"],
-            log_dir,
-            "executed_trades_shares",
-            file_name,
-        )
-        ForecastEvaluatorFromPrices._write_df(
-            derived_dfs["executed_trades_notional"],
-            log_dir,
-            "executed_trades_notional",
-            file_name,
-        )
-        ForecastEvaluatorFromPrices._write_df(
-            derived_dfs["pnl"], log_dir, "pnl", file_name
-        )
-        ForecastEvaluatorFromPrices._write_df(
-            derived_dfs["stats"], log_dir, "statistics", file_name
-        )
-        return file_name
-
-    def to_str(
-        self,
-        df: pd.DataFrame,
-        **kwargs: Dict[str, Any],
-    ) -> str:
-        """
-        Return the state of the Portfolio as a string.
-
-        :param df: as in `compute_portfolio`
-        :param kwargs: forwarded to `compute_portfolio()`
-        :return: portfolio state (rounded) as a string
-        """
-        dfs = self.compute_portfolio(
-            df,
-            **kwargs,
-        )
-        #
-        act = []
-        round_precision = 6
-        precision = 2
-        act.append("# holdings_shares=")
-        act.append(
-            hpandas.df_to_str(
-                dfs["holdings_shares"].round(round_precision),
-                num_rows=None,
-                precision=precision,
-            )
-        )
-        act.append("# holdings_notional=")
-        act.append(
-            hpandas.df_to_str(
-                dfs["holdings_notional"].round(round_precision),
-                num_rows=None,
-                precision=precision,
-            )
-        )
-        act.append("# executed_trades_shares=")
-        act.append(
-            hpandas.df_to_str(
-                dfs["executed_trades_shares"].round(round_precision),
-                num_rows=None,
-                precision=precision,
-            )
-        )
-        act.append("# executed_trades_notional=")
-        act.append(
-            hpandas.df_to_str(
-                dfs["executed_trades_notional"].round(round_precision),
-                num_rows=None,
-                precision=precision,
-            )
-        )
-        act.append("# pnl=")
-        act.append(
-            hpandas.df_to_str(
-                dfs["pnl"].round(round_precision),
-                num_rows=None,
-                precision=precision,
-            )
-        )
-        act.append("# statistics=")
-        act.append(
-            hpandas.df_to_str(
-                dfs["stats"].round(round_precision),
-                num_rows=None,
-                precision=precision,
-            )
-        )
-        act = "\n".join(act)
-        return act
-
-    # //////////////////////////////////////////////////////////////////////////////
-
-    def compute_portfolio(
-        self,
-        df: pd.DataFrame,
-        *,
-        style: str = "cross_sectional",
-        quantization: Optional[int] = 30,
-        liquidate_at_end_of_day: bool = True,
-        initialize_beginning_of_day_trades_to_zero: bool = True,
-        adjust_for_splits: bool = False,
-        reindex_like_input: bool = False,
-        burn_in_bars: int = 3,
-        burn_in_days: int = 0,
-        compute_extended_stats: bool = False,
-        asset_id_to_share_decimals: Optional[Dict[int, int]] = None,
-        **kwargs: Dict[str, Any],
-    ) -> Dict[str, pd.DataFrame]:
-        """
-        Compute target positions, PnL, and portfolio stats.
-
-        :param df: multiindexed dataframe with predictions, price, volatility
-        :param style: belongs to
-            - "cross_sectional": cross-sectionally normalize predictions,
-              possibly remove a portion of the bulk of the distribution,
-              and allocate a target GMV
-            - "longitudinal": normalize and threshold predictions
-              longitudinally, allocating an equal dollar risk to each name
-              independently
-        :param quantization: same as in
-            `core.finance.share_quantization.quantize_shares()`
-        :param liquidate_at_end_of_day: force holdings to zero at the last
-            trade if true (otherwise hold overnight)
-        :param adjust_for_splits: account for stock splits in considering
-            overnight holdings
-        :param reindex_like_input: output dataframes to have the same input as
-            `df` (e.g., including any weekends or values outside of the
-            `start_time`-`end_time` range). If `False`, only return dataframes
-            indexed by the inferred "active index" of datetimes
-        :param burn_in_bars: number of leading bars to trim (to remove warm-up
-            artifacts)
-        :param burn_in_days: number of leading days to trim (to remove warm-up
-            artifacts). Applied independently of `burn_in_bars`.
-        :param compute_extended_stats: compute additional stats beyond the
-            five "core" stats.
-        :param kwargs: forwarded to either
-            `compute_target_positions_cross_sectionally()` or
-            `compute_target_positions_longitudinally()` depending upon the
-            value of `style`
-        :param asset_id_to_share_decimals: same as in
-            `core.finance.share_quantization.quantize_shares()`
-        :return: dictionary of portfolio dataframes, with keys
-            ["holdings_shares", "holdings_notional", "executed_trades_shares",
-             "executed_trades_notional", "pnl", "stats"]
-        """
-        if _LOG.isEnabledFor(logging.DEBUG):
-            _LOG.debug("df=\n%s", hpandas.df_to_str(df, print_shape_info=True))
-        self._validate_df(df)
-        # Record index in case we reindex the results.
-        if reindex_like_input:
-            idx = df.index
-        else:
-            idx = None
-        # Trim to indices with prices and beginning of forecast availability.
-        df = self._apply_trimming(df)
-        # Compute target positions (in dollars).
-        target_holdings_notional = self._compute_target_holdings_notional(
-            df,
-            style,
-            **kwargs,
-        )
-        # Compute holdings (in shares).
-        # TODO(Paul): Expose these two parameters.
-        ffill_limit = 4
-        holdings_shares = self._compute_holdings_shares(
-            df,
-            target_holdings_notional,
-            quantization,
-            liquidate_at_end_of_day,
-            adjust_for_splits,
-            ffill_limit,
-            asset_id_to_share_decimals,
-        )
-        # Compute cash inflows/outflows from trades.
-        executed_trades_shares = self._compute_executed_trades_shares(
-            df,
-            holdings_shares,
-            initialize_beginning_of_day_trades_to_zero,
-        )
-        executed_trades_notional = self._compute_executed_trades_notional(
-            df,
-            executed_trades_shares,
-            ffill_limit,
-        )
-        # Compute notional positions.
-        holdings_notional = self._compute_holdings_notional(df, holdings_shares)
-        # Compute PnL.
-        pnl = self._compute_pnl(df, holdings_notional, executed_trades_notional)
-        # Compute statistics.
-        stats = self._compute_stats(
-            df,
-            holdings_notional,
-            executed_trades_notional,
-            pnl,
-            compute_extended_stats,
-        )
-        #
-        derived_dfs = {
-            "holdings_shares": holdings_shares,
-            "holdings_notional": holdings_notional,
-            "executed_trades_shares": executed_trades_shares,
-            "executed_trades_notional": executed_trades_notional,
-            "pnl": pnl,
-            "stats": stats,
-        }
-        # Apply burn-in and reindex like input.
-        return self._apply_burn_in_and_reindex(
-            df,
-            derived_dfs,
-            burn_in_bars,
-            burn_in_days,
-            idx,
-        )
 
     def annotate_forecasts(
         self,
@@ -441,35 +161,126 @@ class ForecastEvaluatorFromPrices(dtfmabfoev.AbstractForecastEvaluator):
         count_df = pd.concat(dfs.values(), axis=1, keys=dfs.keys())
         return count_df
 
-    # /////////////////////////////////////////////////////////////////////////////
+    # //////////////////////////////////////////////////////////////////////////////
 
-    @staticmethod
-    def _write_df(
+    def _compute_portfolio(
+        self,
         df: pd.DataFrame,
-        log_dir: str,
-        name: str,
-        file_name: str,
-    ) -> None:
-        path = os.path.join(log_dir, name, file_name)
-        hio.create_enclosing_dir(path, incremental=True)
-        hparque.to_parquet(df, path)
+        *,
+        style: str = "cross_sectional",
+        quantization: Optional[int] = 30,
+        liquidate_at_end_of_day: bool = True,
+        initialize_beginning_of_day_trades_to_zero: bool = True,
+        adjust_for_splits: bool = False,
+        reindex_like_input: bool = False,
+        burn_in_bars: int = 3,
+        burn_in_days: int = 0,
+        compute_extended_stats: bool = False,
+        asset_id_to_share_decimals: Optional[Dict[int, int]] = None,
+        **kwargs: Dict[str, Any],
+    ) -> Dict[str, pd.DataFrame]:
+        """
+        Compute target positions, PnL, and portfolio stats.
 
-    @staticmethod
-    def _read_df(
-        log_dir: str,
-        name: str,
-        file_name: str,
-        tz: str,
-    ) -> pd.DataFrame:
-        path = os.path.join(log_dir, name, file_name)
-        df = hparque.from_parquet(path)
-        df.index = df.index.tz_convert(tz)
-        return df
+        :param df: multiindexed dataframe with predictions, price, volatility
+        :param style: belongs to
+            - "cross_sectional": cross-sectionally normalize predictions,
+              possibly remove a portion of the bulk of the distribution,
+              and allocate a target GMV
+            - "longitudinal": normalize and threshold predictions
+              longitudinally, allocating an equal dollar risk to each name
+              independently
+        :param quantization: same as in
+            `core.finance.share_quantization.quantize_shares()`
+        :param liquidate_at_end_of_day: force holdings to zero at the last
+            trade if true (otherwise hold overnight)
+        :param adjust_for_splits: account for stock splits in considering
+            overnight holdings
+        :param reindex_like_input: output dataframes to have the same input as
+            `df` (e.g., including any weekends or values outside of the
+            `start_time`-`end_time` range). If `False`, only return dataframes
+            indexed by the inferred "active index" of datetimes
+        :param burn_in_bars: number of leading bars to trim (to remove warm-up
+            artifacts)
+        :param burn_in_days: number of leading days to trim (to remove warm-up
+            artifacts). Applied independently of `burn_in_bars`.
+        :param compute_extended_stats: compute additional stats beyond the
+            five "core" stats.
+        :param kwargs: forwarded to either
+            `compute_target_positions_cross_sectionally()` or
+            `compute_target_positions_longitudinally()` depending upon the
+            value of `style`
+        :param asset_id_to_share_decimals: same as in
+            `core.finance.share_quantization.quantize_shares()`
+        :return: dictionary of portfolio dataframes, with keys
+            ["holdings_shares", "holdings_notional", "executed_trades_shares",
+             "executed_trades_notional", "pnl", "stats"]
+        """
+        # Record index in case we reindex the results.
+        if reindex_like_input:
+            idx = df.index
+        else:
+            idx = None
+        # Compute target positions (in dollars).
+        target_holdings_notional = self._compute_target_holdings_notional(
+            df,
+            style,
+            **kwargs,
+        )
+        # Compute holdings (in shares).
+        # TODO(Paul): Expose these two parameters.
+        ffill_limit = 4
+        holdings_shares = self._compute_holdings_shares(
+            df,
+            target_holdings_notional,
+            quantization,
+            liquidate_at_end_of_day,
+            adjust_for_splits,
+            ffill_limit,
+            asset_id_to_share_decimals,
+        )
+        # Compute cash inflows/outflows from trades.
+        executed_trades_shares = self._compute_executed_trades_shares(
+            df,
+            holdings_shares,
+            initialize_beginning_of_day_trades_to_zero,
+        )
+        executed_trades_notional = self._compute_executed_trades_notional(
+            df,
+            executed_trades_shares,
+            ffill_limit,
+        )
+        # Compute notional positions.
+        holdings_notional = self._compute_holdings_notional(df, holdings_shares)
+        # Compute PnL.
+        pnl = self._compute_pnl(df, holdings_notional, executed_trades_notional)
+        # Compute statistics.
+        stats = self._compute_stats(
+            df,
+            holdings_notional,
+            executed_trades_notional,
+            pnl,
+            compute_extended_stats,
+        )
+        #
+        derived_dfs = {
+            "holdings_shares": holdings_shares,
+            "holdings_notional": holdings_notional,
+            "executed_trades_shares": executed_trades_shares,
+            "executed_trades_notional": executed_trades_notional,
+            "pnl": pnl,
+            "stats": stats,
+        }
+        # Apply burn-in and reindex like input.
+        return self._apply_burn_in_and_reindex(
+            df,
+            derived_dfs,
+            burn_in_bars,
+            burn_in_days,
+            idx,
+        )
 
-    @staticmethod
-    def _get_df(df: pd.DataFrame, col: str) -> pd.DataFrame:
-        hdbg.dassert_in(col, df.columns)
-        return df[col]
+    # /////////////////////////////////////////////////////////////////////////////
 
     def _validate_target_position_df(
         self, target_positions: pd.DataFrame, predictions: pd.DataFrame
@@ -479,16 +290,6 @@ class ForecastEvaluatorFromPrices(dtfmabfoev.AbstractForecastEvaluator):
         )
         hdbg.dassert_eq(target_positions.columns.nlevels, 1)
         hpandas.dassert_axes_equal(target_positions, predictions)
-
-    def _validate_df(self, df: pd.DataFrame) -> None:
-        hpandas.dassert_time_indexed_df(
-            df, allow_empty=True, strictly_increasing=True
-        )
-        hdbg.dassert_eq(df.columns.nlevels, 2)
-        hdbg.dassert_is_subset(
-            [self._price_col, self._volatility_col, self._prediction_col],
-            df.columns.levels[0].to_list(),
-        )
 
     def _apply_trimming(self, df: pd.DataFrame) -> pd.DataFrame:
         """
@@ -511,7 +312,7 @@ class ForecastEvaluatorFromPrices(dtfmabfoev.AbstractForecastEvaluator):
             self._sell_price_col,
         ]
         for col in optional_cols:
-            if col is not None:
+            if col is not None and col not in cols:
                 cols += [col]
         df = df[cols]
         if _LOG.isEnabledFor(logging.DEBUG):
@@ -848,33 +649,6 @@ class ForecastEvaluatorFromPrices(dtfmabfoev.AbstractForecastEvaluator):
             compute_extended_stats,
         )
         return stats
-
-    def _apply_burn_in_and_reindex(
-        self,
-        df: pd.DataFrame,
-        derived_dfs: Dict[str, pd.DataFrame],
-        burn_in_bars: int,
-        burn_in_days: int,
-        input_idx: Optional[None],
-    ) -> Dict[str, pd.DataFrame]:
-        # Remove initial bars.
-        if burn_in_bars > 0:
-            for key, value in derived_dfs.items():
-                derived_dfs[key] = value.iloc[burn_in_bars:]
-        if burn_in_days > 0:
-            # TODO(Paul): Consider making this more efficient (and less
-            # awkward).
-            date_idx = df.groupby(lambda x: x.date()).count().index
-            hdbg.dassert_lt(burn_in_days, date_idx.size)
-            first_date = pd.Timestamp(date_idx[burn_in_days], tz=df.index.tz)
-            _LOG.info("Initial date after burn-in=%s", first_date)
-            for key, value in derived_dfs.items():
-                derived_dfs[key] = value.loc[first_date:]
-        # Possibly reindex dataframes.
-        if input_idx is not None:
-            for key, value in derived_dfs.items():
-                derived_dfs[key] = value.reindex(input_idx)
-        return derived_dfs
 
 
 # #############################################################################

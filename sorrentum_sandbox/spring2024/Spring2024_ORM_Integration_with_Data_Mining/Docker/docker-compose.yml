@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  jupyter:
+    build: .
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./notebooks:/app/notebooks
+      - ./data:/app/data
+    environment:
+      - DATABASE_URL=sqlite:///mydatabase.db
+      - JUPYTER_ENABLE_LAB=yes
+
+  sqlite:
+    image: alpine
+    volumes:
+      - ./data:/app/data
+    command: >
+      sh -c "apk add --no-cache sqlite && sqlite3 mydatabase.db && tail -f /dev/null"
+
+volumes:
+  notebooks:
+  data:
+

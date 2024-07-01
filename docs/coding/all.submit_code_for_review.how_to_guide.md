@@ -13,6 +13,7 @@
   * [Ask for reviews](#ask-for-reviews)
   * [Do not use screenshots](#do-not-use-screenshots)
   * [Report bugs correctly](#report-bugs-correctly)
+- [Talk through code and not GitHub](#talk-through-code-and-not-github)
 - [Look at examples of the first reviews](#look-at-examples-of-the-first-reviews)
 
 <!-- tocstop -->
@@ -24,8 +25,8 @@ some helpful tips and resources to guide you through your first review.
 ## Read Python Style Guide
 
 - Before submitting your code for review, we highly recommend that you read the
-  [Python Style Guide](Coding_Style_Guide.md), which outlines the major
-  conventions and best practices for writing Python code.
+  [Python Style Guide](all.coding_style.how_to_guide.md), which outlines the
+  major conventions and best practices for writing Python code.
 - Adhering to these standards will help ensure that your code is easy to read,
   maintain, and understand for other members of the team.
 
@@ -38,7 +39,7 @@ some helpful tips and resources to guide you through your first review.
 - To be able to run the linter, you need to you need to set up your client first
   since you're outside Docker:
   - The instructions are available at
-    [KaizenFlow_development_setup.md](KaizenFlow_development_setup.md.md)
+    [KaizenFlow_development_setup.md](/docs/onboarding/kaizenflow.set_up_development_environment.how_to_guide.md)
   - In practice you need to have run
     ```
     > source dev_scripts/setenv_amp.sh
@@ -142,7 +143,7 @@ some helpful tips and resources to guide you through your first review.
   - Press the circling arrows sign next to the Reviewer for the ping
     - <img width="280" alt="" src="https://github.com/kaizen-ai/kaizenflow/assets/31514660/4f924f4f-abab-40be-975d-a4fa81d9af3b">
   - Remove `PR_for_authors` and add `PR_for_reviewers` label (labels
-    [desc](https://github.com/cryptokaizen/cmamp/blob/master/docs/work_organization/all.use_github_and_zenhub.how_to_guide.md#pr-labels))
+    [desc](/docs/work_organization/all.use_github_and_zenhub.how_to_guide.md#pr-labels))
     - <img width="271" alt="" src="https://github.com/kaizen-ai/kaizenflow/assets/31514660/3580bf34-dcba-431b-af5c-5ae65f7597c3">
 
 ### Do not use screenshots
@@ -212,8 +213,8 @@ some helpful tips and resources to guide you through your first review.
   only through code
   - E.g., if there is something you want to explain to the reviewers, you should
     not comment your own PR, but should add comments or improve the code
-  - Everything in GitHub is lost once the PR is closed, so all knowledge needs to
-    go inside the code or the documentation
+  - Everything in GitHub is lost once the PR is closed, so all knowledge needs
+    to go inside the code or the documentation
 - Of course it's ok to respond to questions in GitHub
 
 ## Look at examples of the first reviews

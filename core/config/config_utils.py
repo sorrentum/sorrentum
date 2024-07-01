@@ -139,11 +139,12 @@ def load_config_from_pickle(config_path: str) -> cconconf.Config:
     hdbg.dassert_path_exists(config_path)
     _LOG.debug("Reading config from %s", config_path)
     config = hpickle.from_pickle(config_path)
-    # TODO(Dan): `config` should be a `cconconf.Config` but previously it
-    #  used to be dict, so keeping both for back-compatibility, see CmTask6627.
     if isinstance(config, dict):
-        _LOG.warning("Found Config v1.0 flow: converting")
-        config = cconconf.Config.from_dict(config)
+        # _LOG.warning("Found Config v1.0 flow: converting")
+        # config = cconconf.Config.from_dict(config)
+        raise TypeError(
+            f"Found Config v1.0 flow at '{config_path}'. Deprecated in CmTask7794."
+        )
     return config
 
 

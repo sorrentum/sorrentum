@@ -1,0 +1,3 @@
+ssn|cc_num|first|last|gender|street|city|state|zip|lat|long|city_pop|job|dob|acct_num|profile|trans_num|trans_date|trans_time|unix_time|category|amt|is_fraud|merchant|merch_lat|merch_long
+115-04-4507|4218196001337|Jonathan|Johnson|M|863 Lawrence Valleys|Taunton|MA|2780|41.905|-71.1026|49036|Accounting technician|1998-10-03|888022315787|adults_2550_male_urban.json|eff808c2967ef68814dc50c7a037bda6|2024-05-18|01:46:02|1716011162|grocery_pos|9.93|1|Vandervort-Funk|42.224578|-70.916248
+115-04-4507|4218196001337|Jonathan|Johnson|M|863 Lawrence Valleys|Taunton|MA|2780|41.905|-71.1026|49036|Accounting technician|1998-10-03|888022315787|adults_2550_male_urban.json|682e0cc79f58c0cae02760da422cc32e|2024-05-18|00:30:46|1716006646|gas_transport|7.74|1|Harris Inc|41.843165|-70.285541

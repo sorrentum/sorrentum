@@ -1,8 +1,8 @@
-INFO: > cmd='/venv/bin/invoke pytest_repro --file-name=$GIT_ROOT/helpers/test/outcomes/Test_pytest_repro_end_to_end.test7/input/log.txt --show-stacktrace --script-name $GIT_ROOT/helpers/test/outcomes/Test_pytest_repro_end_to_end.test7/tmp.scratch/tmp.pytest_repro.sh'
+HH:MM:SS - INFO  hdbg.py init_logger:1015                               > cmd='/venv/bin/invoke pytest_repro --file-name=$GIT_ROOT/helpers/test/outcomes/Test_pytest_repro_end_to_end.test7/input/log.txt --show-stacktrace --script-name $GIT_ROOT/helpers/test/outcomes/Test_pytest_repro_end_to_end.test7/tmp.scratch/tmp.pytest_repro.sh'
 ## pytest_repro:
 HH:MM:SS - INFO  lib_tasks_pytest.py pytest_repro:{LINE_NUM}                   Reading file_name='$GIT_ROOT/helpers/test/outcomes/Test_pytest_repro_end_to_end.test7/input/log.txt'
 HH:MM:SS - INFO  lib_tasks_pytest.py pytest_repro:{LINE_NUM}                   Reading failed tests from file '$GIT_ROOT/helpers/test/outcomes/Test_pytest_repro_end_to_end.test7/input/log.txt'
-HH:MM:SS - INFO  lib_tasks_pytest.py pytest_repro:{LINE_NUM}                   Found 3 failed pytest 'tests' target(s); to reproduce run:
+HH:MM:SS - INFO  lib_tasks_pytest.py pytest_repro:{LINE_NUM}                  Found 3 failed pytest 'tests' target(s); to reproduce run:
 pytest dataflow/system/example1/test/test_example1_forecast_system.py::Test_Example1_ForecastSystem_FitPredict::test_fit_over_backtest_period1
 pytest dataflow/system/example1/test/test_example1_forecast_system.py::Test_Example1_ForecastSystem_FitPredict::test_fit_over_period1
 pytest helpers/test/test_lib_tasks.py::TestDryRunTasks1::test_git_clean

@@ -34,7 +34,13 @@ _LOG = logging.getLogger(__name__)
 # Set of columns which are unique row-wise across db tables for corresponding
 # data type.
 BASE_UNIQUE_COLUMNS = ["timestamp", "exchange_id", "currency_pair"]
-BID_ASK_UNIQUE_COLUMNS = []
+BID_ASK_UNIQUE_COLUMNS = BASE_UNIQUE_COLUMNS + [
+    "bid_size", 
+    "bid_price", 
+    "ask_size", 
+    "ask_price", 
+    "level"
+]
 TRADES_UNIQUE_COLUMNS = ["id"]
 NUMBER_OF_RETRIES_TO_SAVE = 3
 OHLCV_UNIQUE_COLUMNS = BASE_UNIQUE_COLUMNS + [
@@ -608,6 +614,11 @@ def save_data_to_db(
         unique_columns = OHLCV_UNIQUE_COLUMNS
     elif data_type == "bid_ask":
         unique_columns = BID_ASK_UNIQUE_COLUMNS
+        #TODO(Juraj): Hacky fix, because proper solution requires 
+        # more time spent on updating DB schema,
+        # will be addressed in a follow-up of #7932.
+        if db_table != "binance_bid_ask_futures_raw":
+            unique_columns= []
     elif data_type == "trades":
         unique_columns = TRADES_UNIQUE_COLUMNS
     else:

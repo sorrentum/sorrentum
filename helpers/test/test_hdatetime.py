@@ -577,6 +577,40 @@ class Test_find_bar_timestamp2(hunitest.TestCase):
 
 
 # #############################################################################
+# Test_convert_seconds_to_minutes
+# #############################################################################
+
+
+class Test_convert_seconds_to_minutes(hunitest.TestCase):
+    def test1(self) -> None:
+        """
+        Check that conversion is implemented correcty.
+        """
+        num_secs = 300
+        act = hdateti.convert_seconds_to_minutes(num_secs)
+        exp = int(num_secs / 60)
+        self.assertEqual(act, exp)
+
+    def test2(self) -> None:
+        """
+        Check that an error is raised when input is not an integer number of
+        minutes.
+        """
+        num_secs = 10
+        with self.assertRaises(AssertionError) as cm:
+            hdateti.convert_seconds_to_minutes(num_secs)
+        act = str(cm.exception)
+        exp = """
+        * Failed assertion *
+        '10'
+        ==
+        '0'
+        num_secs=10 is not an integer number of minutes
+        """
+        self.assert_equal(act, exp, fuzzy_match=True)
+
+
+# #############################################################################
 # Test_convert_unix_epoch_to_timestamp
 # #############################################################################
 

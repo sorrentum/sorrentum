@@ -835,9 +835,16 @@ class Test_pytest_repro_end_to_end(hunitest.TestCase):
         # Run the command.
         _, act = hsystem.system_to_string(cmd)
         # Filter out the "No module named ..." warnings.
-        # TODO(Grisha): add the "no module warning" filtering
-        # to `purify_text()` in `check_string()`.
+        # TODO(Grisha): add the "no module warning" filtering to
+        # `purify_text()` in `check_string()`.
         regex = "WARN.*No module"
+        act = hunitest.filter_text(regex, act)
+        # Remove "Encountered unexpected exception importing solver GLPK"
+        # generated on Mac.
+        regex = "Encountered unexpected exception importing solver GLPK"
+        act = hunitest.filter_text(regex, act)
+        # ImportError("cannot import name 'glpk' from 'cvxopt' (/venv/lib/python3.9/site-packages/cvxopt/__init__.py)")
+        regex = r"""ImportError\("cannot import name"""
         act = hunitest.filter_text(regex, act)
         # Modify the outcome for reproducibility.
         act = hprint.remove_non_printable_chars(act)

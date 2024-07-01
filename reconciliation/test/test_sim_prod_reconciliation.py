@@ -53,12 +53,14 @@ class Test_get_system_run_parameters(hunitest.TestCase):
             mode,
         ) in system_run_params:
             # Create target dir.
+            tag = ""
             target_dir = rsiprrec.get_target_dir(
                 self._prod_data_root_dir,
                 self._dag_builder_name,
                 self._run_mode,
                 start_timestamp_as_str,
                 end_timestamp_as_str,
+                tag=tag,
             )
             hio.create_dir(target_dir, incremental=True)
             # Create system log dir.
@@ -88,9 +90,11 @@ class Test_get_system_run_parameters(hunitest.TestCase):
         Compare the output with the expected result.
         """
         # Get system run parameters.
+        tag = ""
         output = func(
             self._prod_data_root_dir,
             self._dag_builder_name,
+            tag,
             self._run_mode,
             start_timestamp,
             end_timestamp,
@@ -292,6 +296,7 @@ class Test_build_reconciliation_configs(hunitest.TestCase):
         end_timestamp_as_str = "20230802_160000"
         run_mode = "prod"
         mode = "scheduled"
+        tag = ""
         # Create required dirs and config files in scratch space.
         self.set_up_test(
             dst_root_dir,
@@ -308,6 +313,7 @@ class Test_build_reconciliation_configs(hunitest.TestCase):
             end_timestamp_as_str,
             run_mode,
             mode,
+            tag=tag,
         )
         actual = str(config)
         self.check_string(actual, purify_text=True)
@@ -327,6 +333,7 @@ class Test_build_reconciliation_configs(hunitest.TestCase):
         end_timestamp_as_str = "20230802_160000"
         run_mode = "prod"
         mode = "scheduled"
+        tag = ""
         set_config_values = '("process_forecasts_node_dict","process_forecasts_dict","optimizer_config","params","style"),(str("longitudinal"));("process_forecasts_node_dict","process_forecasts_dict","optimizer_config","params","kwargs"),({"target_dollar_risk_per_name": float(1.0), "prediction_abs_threshold": float(0.3)})'
         # Create required dirs and config files in scratch space.
         self.set_up_test(
@@ -344,7 +351,8 @@ class Test_build_reconciliation_configs(hunitest.TestCase):
             end_timestamp_as_str,
             run_mode,
             mode,
-            set_config_values,
+            tag=tag,
+            set_config_values=set_config_values,
         )
         actual = str(config)
         self.check_string(actual, purify_text=True)
@@ -364,6 +372,7 @@ class Test_build_reconciliation_configs(hunitest.TestCase):
         end_timestamp_as_str = "20230802_160000"
         run_mode = "prod"
         mode = "scheduled"
+        tag = ""
         set_config_values = """("process_forecasts_node_dict","process_forecasts_dict","optimizer_config","backend"),(str("batch_optimizer"));("process_forecasts_node_dict","process_forecasts_dict","optimizer_config","params"),({"dollar_neutrality_penalty": float(0.0), "constant_correlation": float(0.85), "constant_correlation_penalty": float(1.0), "relative_holding_penalty": float(0.0), "relative_holding_max_frac_of_gmv": float(0.6), "target_gmv": float(1500.0), "target_gmv_upper_bound_penalty": float(0.0), "target_gmv_hard_upper_bound_multiple": float(1.0), "transaction_cost_penalty": float(0.1), "solver": str("ECOS")})"""
         # Create required dirs and config files in scratch space.
         self.set_up_test(
@@ -381,7 +390,8 @@ class Test_build_reconciliation_configs(hunitest.TestCase):
             end_timestamp_as_str,
             run_mode,
             mode,
-            set_config_values,
+            tag=tag,
+            set_config_values=set_config_values,
         )
         actual = str(config)
         self.check_string(actual, purify_text=True)
@@ -402,6 +412,7 @@ class Test_build_reconciliation_configs(hunitest.TestCase):
         end_timestamp_as_str = "20230802_160000"
         run_mode = "prod"
         mode = "scheduled"
+        tag = ""
         # Config overrides don't have any optimizer overrides.
         set_config_values = '("market_data_config","days"),(pd.Timedelta(str("150T")));("trading_period"),(str("3T"))'
         # Create required dirs and config files in scratch space.
@@ -420,7 +431,8 @@ class Test_build_reconciliation_configs(hunitest.TestCase):
             end_timestamp_as_str,
             run_mode,
             mode,
-            set_config_values,
+            tag=tag,
+            set_config_values=set_config_values,
         )
         actual = str(config)
         self.check_string(actual, purify_text=True)
@@ -1122,6 +1134,7 @@ class Test_reconcile_create_dirs(hunitest.TestCase):
         run_mode = "paper_trading"
         start_timestamp_as_str = "20230828_130500"
         end_timestamp_as_str = "20230829_131000"
+        tag = ""
         abort_if_exists = False
         # Create the existing dir for the test.
         if create_dir:
@@ -1131,6 +1144,7 @@ class Test_reconcile_create_dirs(hunitest.TestCase):
                 run_mode,
                 start_timestamp_as_str,
                 end_timestamp_as_str,
+                tag=tag,
             )
             existing_dir = os.path.join(existing_dir, "mock_dir")
             hio.create_dir(existing_dir, incremental=False)
@@ -1143,6 +1157,7 @@ class Test_reconcile_create_dirs(hunitest.TestCase):
             dst_root_dir,
             abort_if_exists,
             backup_dir_if_exists,
+            tag=tag,
         )
         # Check.
         actual_dirs = sorted(

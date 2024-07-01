@@ -75,14 +75,8 @@ else:
     # The subfolder is marked by the datetime of the run, e.g.
     # "build_tile_configs.C11a.ccxt_v8_1-all.5T.2023-01-01_2024-03-20.ins.run0/portfolio_dfs/20240326_131724".
     # TODO(Danya): Factor out into a function.
-    output_dir_name = os.path.join(
-        dir_name.rstrip("tiled_results"),
-        "portfolio_dfs",
-        pd.Timestamp.utcnow().strftime("%Y%m%d_%H%M%S"),
-    )
     default_config_dict = {
         "dir_name": dir_name,
-        "output_dir_name": output_dir_name,
         "start_date": datetime.date(2024, 1, 1),
         "end_date": datetime.date(2024, 1, 31),
         "asset_id_col": "asset_id",
@@ -115,7 +109,7 @@ else:
             "modulate_using_prediction_magnitude": False,
             "prediction_abs_threshold": 0.3,
         },
-        "column_names": {
+        "forecast_evaluator_kwargs": {
             "price_col": "open",
             "volatility_col": "garman_klass_vol",
             "prediction_col": "feature",
@@ -219,22 +213,11 @@ bar_metrics_dict = {}
 for key, config in config_dict.items():
     if config["load_all_tiles_in_memory"]:
         fep = dtfmod.ForecastEvaluatorFromPrices(
-            **config["column_names"].to_dict(),
+            **config["forecast_evaluator_kwargs"].to_dict(),
         )
-        # Create a subdirectory for the current config, e.g.
-        # "optimizer_config_dict:constant_correlation_penalty=1".
-        experiment_dir = os.path.join(
-            config["output_dir_name"], key.replace(" ", "")
-        )
-        _LOG.info("Saving portfolio in experiment_dir=%s", experiment_dir)
-        file_name = fep.save_portfolio(
+        portfolio_df, bar_metrics = fep.annotate_forecasts(
             tile_df,
-            experiment_dir,
             **config["annotate_forecasts_kwargs"].to_dict(),
-        )
-        # Load back the portfolio and metrics that were calculated.
-        portfolio_df, bar_metrics = fep.load_portfolio_and_stats(
-            experiment_dir, file_name=file_name
         )
     else:
         portfolio_df, bar_metrics = dtfmod.annotate_forecasts_by_tile(
@@ -242,9 +225,9 @@ for key, config in config_dict.items():
             config["start_date"],
             config["end_date"],
             config["asset_id_col"],
-            config["column_names"]["price_col"],
-            config["column_names"]["volatility_col"],
-            config["column_names"]["prediction_col"],
+            config["forecast_evaluator_kwargs"]["price_col"],
+            config["forecast_evaluator_kwargs"]["volatility_col"],
+            config["forecast_evaluator_kwargs"]["prediction_col"],
             asset_ids=None,
             annotate_forecasts_kwargs=config[
                 "annotate_forecasts_kwargs"

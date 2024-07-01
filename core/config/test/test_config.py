@@ -1878,9 +1878,9 @@ class Test_save_to_file(hunitest.TestCase):
             log_dir, f"{tag}.all_values_picklable.pkl"
         )
         # Check that file paths exist.
-        hdbg.dassert_path_exists(expected_txt_path)
-        hdbg.dassert_path_exists(expected_pkl_str_path)
-        hdbg.dassert_path_exists(expected_pkl_path)
+        self.assertTrue(os.path.exists(expected_txt_path))
+        self.assertTrue(os.path.exists(expected_pkl_str_path))
+        self.assertTrue(os.path.exists(expected_pkl_path))
 
     def test1(self) -> None:
         """

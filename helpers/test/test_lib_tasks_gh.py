@@ -44,7 +44,7 @@ class TestLibTasks1(hunitest.TestCase):
         )
         self.assert_equal(str(act), str(exp))
 
-    # TODO(ShaopengZ): fails when running Sorrentum on CK server. `gh auth
+    # TODO(ShaopengZ): fails when running kaizenflow on CK server. `gh auth
     # login` issue.
     @pytest.mark.skipif(
         henv.execute_repo_config_code("get_name()") == "//kaizen"

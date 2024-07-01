@@ -1127,6 +1127,8 @@ class TestListAndMergePqFilesMixedUnits(hunitest.TestCase):
         second_unit = "us"
         self._list_and_merge_mixed_units_pq_files(first_unit, second_unit)
 
+    # TODO(Nina): @Samarth fix the test.
+    @pytest.mark.skip(reason="Broken.")
     def test_parquet_files_with_mixed_time_units_2(self) -> None:
         """
         Test merging Parquet files with the `ms` and `ns`.

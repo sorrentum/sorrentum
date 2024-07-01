@@ -272,7 +272,8 @@ class AbstractCcxtBroker(obrobrok.Broker):
         )
         self._logger.log_bid_ask_data(self._get_wall_clock_time, bid_ask_data)
         # Drop duplicates from the bid/ask data.
-        bid_ask_data, _ = obccccut.drop_bid_ask_duplicates(bid_ask_data)
+        # TODO(Grisha): pass `max_num_dups` via SystemConfig["broker_config"].
+        bid_ask_data, _ = obccccut.drop_bid_ask_duplicates(bid_ask_data, max_num_dups=10)
         # Filter loaded data to only the broker's universe symbols.
         # Convert currency pairs to full CCXT symbol format, e.g. 'BTC_USDT' ->
         # 'BTC/USDT:USDT'

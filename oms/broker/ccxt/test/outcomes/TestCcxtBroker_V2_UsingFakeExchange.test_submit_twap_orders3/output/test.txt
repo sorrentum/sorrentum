@@ -72,7 +72,7 @@ extra_params={'ccxt_id': [2],
            '_submit_twap_child_order::child_order.submitted': Timestamp('2022-08-05 10:37:02-0400', tz='America/New_York'),
            '_submit_twap_child_order::get_open_positions.done': Timestamp('2022-08-05 10:37:00-0400', tz='America/New_York'),
            '_submit_twap_child_order::wave_id': 1,
-           '_submit_twap_orders::aligned_with_next_wave.end': Timestamp('2022-08-05 10:37:58-0400', tz='America/New_York')}},
+           '_submit_twap_orders::aligned_with_next_wave.end': Timestamp('2022-08-05 10:37:55-0400', tz='America/New_York')}},
  Order:
 order_id=3
 creation_timestamp=2022-08-05 10:37:00-04:00
@@ -97,4 +97,4 @@ extra_params={'ccxt_id': [3],
            '_submit_twap_child_order::child_order.submitted': Timestamp('2022-08-05 10:37:02-0400', tz='America/New_York'),
            '_submit_twap_child_order::get_open_positions.done': Timestamp('2022-08-05 10:37:00-0400', tz='America/New_York'),
            '_submit_twap_child_order::wave_id': 1,
-           '_submit_twap_orders::aligned_with_next_wave.end': Timestamp('2022-08-05 10:37:58-0400', tz='America/New_York')}}]
+           '_submit_twap_orders::aligned_with_next_wave.end': Timestamp('2022-08-05 10:37:55-0400', tz='America/New_York')}}]

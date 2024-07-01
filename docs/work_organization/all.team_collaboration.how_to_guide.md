@@ -30,7 +30,7 @@
 # Ask somebody if you have any doubts
 
 - If you have doubts on how to do something you want to do:
-  - Look in the [documentation](https://github.com/cryptokaizen/cmamp/tree/master/docs) and our
+  - Look in the [documentation](/docs) and our
     [Google drive](https://drive.google.com/drive/u/0/folders/1LXwKpmaFWJI-887IoA50sVC8-dw_1L8I)
   - Google search is your friend
   - Ask your team-members

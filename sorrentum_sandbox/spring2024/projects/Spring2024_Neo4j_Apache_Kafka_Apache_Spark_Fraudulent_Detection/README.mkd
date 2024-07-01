@@ -1,0 +1,247 @@
+## Author Info
+Author: Isaac Stobbe
+
+Github User: stobbei
+
+Email: istobbe@umd.edu
+
+
+## Technology
+---
+#### Neo4j
+- Neo4j is the premier graph database which instead of modeling data in a tabular form with fields and records, models data using nodes and relationships between them. 
+    - Nodes have labels denoting what they are, and similar entries will have the same node label synonymous to how similar entries in a relationshal database would be stored in the same table. 
+        - Within nodes are properties, which store the unique information about a node - such as
+            -it's name, a time it occured, and other descriptive characteristics 
+    - Relationships have types which describe how two nodes are related. 
+    - A common use of a graphical database could be a social media platform, in which nodes are people and a relationship between two people nodes could be "follows". 
+
+- A major benefit to graph databases is that the data is stored and traversed more intuitively than in a traditional relational databases. There's no need to concern yourself with joins across many normalized tables. 
+- Instead you query the database by asking it about types of nodes and the relationships between them. 
+- There are major performants improvements in a graph model. 
+    - When querying for nodes 1 away it is about as performant as a relational database, but as you begin looking for friends of friends of a person, or friends of friends of friends the graph datastore in Neo4j performs exponentially better. 
+
+- Fraud detection is a common use case for graph databases and is the domain I selected for this project. 
+    - In it there are person, merchant, credit card, transactional and other nodes which effectively model the transactional dataspace. - A fascinating added complexity is the way Neo4j can model fraud rings and interested mischeiving parties working together to conduct fraud. 
+    - Storing the data in graphs makes it easier to understand the sophisticated interworkings in this arena and it's a use case growing more and more common in the Banking, Financial and Tax industries.
+
+- A downside of using Neo4j is the increased time required to perform writes to the database. 
+- This is especially true of writing relationships as these require the database to search and lock both the source and target nodes in order to insert the relationship. 
+    - This is a time intensive processes and inhibits parallelization of writes, especially as the database size grows.
+- Another downside is the requirement to learn to use Cypher query language to perform queries. While SQL has developed many different flavors in its long life there are similarities between the versions. Cypher query language requires a learning curve to develop accurate and time-effective queries.
+
+#### Apache Spark Structured Streaming
+
+- Apache Spark Structured Streaming is a streaming framework built on top of Spark SQL which is built in Java and accessible in python via the Pyspark package API. 
+- Spark Structured Streaming handles the scheduling, checkpoints and datasource detection and its interface allows you to develop with its streaming objects as if they are static data sources. 
+- By defining reading and writing streams, Structured Streaming will identify when new file sources are detected and instantaneously schedule and monito jobs to pick up the source data. 
+- Data transformations, casting and cleansing are handled in the write streams, along with the Neo4j write once the neo4j spark driver is properly installed and the data schemas are defined.
+
+- Leveraging data streaming with spark is beneficial to standard batch jobs as pipeline scheduling is not needed. You aren't required to identify triggers to orchestrate pipeline execution stages, and data will always be processed once its deposited to the source. 
+- This is incredibly powerful and the access to native Spark Dataframe methods within the streaming pipelines provides sufficient tools for data transformation. 
+- Another pro is the highly-parallelized nature of streams, allowing many to run simulatenously and improving performance. 
+- Some cons to Structured Streams are its not easy to see which particular files are being inserted. 
+    - Oftentimes with large data flows it's unclear if the streams are running successfully and the parallelization can mean a lot of the processing power is being divided up among many jobs. This slows down the write performance while inhibiting visibility into the process. 
+- Another con is the difficulty of implementing data transformations. 
+        - I found the transformations needed possible to implement, however the development was more challenging than batch processing in pandas for example, and pandas provides many more tools for manipulation. 
+- A third con is the need to have multiple streams per sink. In the case of file writes to different locations this does make more sense, however in its integration with Neo4j all data was coming from csv files.
+    -The different writes by node were required to be different streams. This meant the engine needed to run multiple jobs which slowed-down performance.
+
+Sources: Neo4j, Apache Spark, Medium.
+
+
+## Docker Implementation
+---
+- There are two docker containers in this system
+    - Neo4j service running `neo4j:latest`
+    - Custom Dockerfile containing jupyter notebook, data generation and database queries
+- I chose 2 containers as neo4j's existing image enables easy access and build of the graph database, while all custom python and shell scripts and designated to live in the other. Also it simplifies the process if both the data generation and spark streams exist on the same container
+
+### Dockerfile
+- Built on the base python image `python:3.10.12`
+- Sets the working directory as `/app`
+- Copies the `/docker` directory into `/app`
+- Adjusts the permission of `datagen_command.sh` which will be executed by `cron` to create mock transactional data
+- installs the python requirements like `neo4j` and `pyspark`
+- Updates the linux environment to support system installs
+- Installs the default java development kit needed for Spark
+- Copies the jar for the pyspark neo4j connector to the proper location and runs `spark-shell` to install
+- Intalls `cron` and copies and runs the `cronjob` script into the image
+    - I'm utilizing cron to illustrate spark streams ability to pick up and ingest data feeds
+- Exposes ports
+    - `8888` for jupyter notebook
+    - `7687` for accessing the neo4j service
+    - `4040` to allow access to the Spark jobs manager
+- Executes the starting shell script which initializes the cron daemon and runs jupyter notebook without a token at `ip 0.0.0.0`
+    - I chose a shell script to easily execute both the needed cron and jupyter notebook commands on the container start
+
+### docker-compose.yaml
+- Defines the `neo4j` and `spark` services
+- Creates the `graph-net` network to enable them to communicate
+- Maps both ports `7474` and `7687` to themselves for access in the local machine
+- Maps the jupyter notebook to port `8080` locally and the spark manager to port `4041`
+- Disables neo4j authentication to simplify access
+
+### Build and Access the Containers
+- Navigate to the `sorrentum/sorrentum_sandbox/spring2024/projects/Spring2024_Neo4j_Apache_Kafka_Apache_Spark_Fraudulent_Detection/docker` directory
+- Run `sudo docker compose up` to simultaneously build and run the containers
+- Navigate to `https://localhost:8888` to access the jupyter notebook and open `Spark Streams.ipynb`, execute the code in this notebook to start the streams
+- Navigate to `https://localhost:7474` to use the Neo4j web gui
+- Navigate to `https://localhost:4041` to view the Spark jobs
+
+
+## Python Implementation
+---
+
+The python Implementation composes several pieces:
+
+- Leverage Spakov_Data_Generation git repo to randomly generate real and fraudulent credit card transactions
+- Establishes a cron job to continuously generate more transactions for a subsequent month every 10 minutes
+- Develops spark structured streaming pipelines to pickup these csv files and insert them into neo4j
+- An additional notebook `Fraud Detection.ipynb` provides example queries to detect fraudulent transactions
+
+### Data Generation
+- Sparkov Data Generation provided rich transaction data including important attributes like:
+    - Peoples names, addresses, professions and ages
+    - Transaction dates, times and amounts
+    - Credit cards and bank accounts
+    - Merchants and their category and location
+
+- It provides `is_fraud` labels useful for performing accuracy tests of the system
+- It's built with the recognition that fraudulent purchases are likely to be different from typical transactions in some important ways:
+    - Will often come over relatively quick succession (1-7 days)
+    - Will be of higher amounts than most purchases
+    - Are more likely to be made at Grocery or online retailers
+    - May replicate a known transaction id in the system
+- I use a fixed list of 50 random customers and batch generate additional transactions for a given month.
+- To execute during testing run:
+    
+
+    cd Sparkov_Data_Generation
+    python3 datagen.py -o output -n output/customers.csv <start date like 01-01-2024> <end date>
+    
+
+
+### Spark Structured Streaming
+
+Spark Structured streaming is built using the pyspark package in the Spark `Streaming.ipynb` notebook. This code block ingests data saved to the Sparkov_Data_Generation/output directory into the neo4j database.
+
+The script is divided into roughly seven sections:
+- Instantiate the SparkSession object and define its configuration parameters
+- Create neo4j indexes on the node properties used most for querying and writes
+- Load the standard file schema and identify the output fields which belong to each node
+- Instantiate the read stream pointing at the Sparkov output location
+- Create the class `StreamWriter` with `insert_node` and `insert_relationship` methods to manage the stream writes
+    - These methods take parameter inputs for:
+        - Node fields used to allocate specific fields as properties on the relevant node.
+        - The checkpoint location (a tmp file used by spark to manage streams and their metadata)
+        - Node labels - the highest-level identifier for the database schema
+        - Node unique key identifiers (for upserts). For example I used the SSN for Person nodes, Credit Card numbers for credit card nodes, etc.
+        - Relationship types - analogous to node labels for relationships
+        - The source and target relationship labels and keys for relationships to be their respective to given nodes
+- Define the data cleansing logic being performed:
+    - Convert transaction amounts, latitudes and longitudes to double
+    - Convert transaction date and persons date of birth to date
+    - Concatenate the date and time field and convert to a transaction datetime
+    - Remove the header row from the insert
+- Instantiate a different stream object for each write stream (for each node and relationship type
+    - Execute the relevant method on each stream object to start the write stream with each configuration
+
+### Fraud Queries
+Fraud queries are sample queries found in the `Fraud Discovery.ipynb` jupyter notebook. This script breaks down into two parts:
+- Connect to the Neo4j database with the python neo4j library
+- Use Cypher query language to interrogate the database for suspected cases of fraud.
+    - Leverages the benefit of node-traversal to move from transactions to credit cards to people, and the opposite direction from transactions to merchants.
+    - Looks for series of transactions which happened within 7 days of each other that are of suspiciously high amounts or spent at atypical merchants
+    - Looks for transaction ids which are associated with multiple merchants or credit cards
+
+- I recommend you copy and paste these queries into the Neo4j web gui to really see the power of Neo4j visualization. Wait for the spark jobs to be completed to see they full depth of the transactional picture, and set a `limit` to improve query performance and visualization rendering.
+
+
+## Database Schema
+---
+The Neo4j schema consists of Person, CreditCard, Transaction, Location and Merchant nodes. And Used, Sent, Received and Resides in relationships.
+
+Node properties are as follows:
+- Person 
+    - First name, Last name, SSN, Date of Birth, Gender, Job
+- Location
+    - Street address, City, State, Zip code, Latitude, Longitude, City population
+- Account
+    - Account number
+- Credit Card
+    - Credit card number
+- Transaction
+    - Transaction number, Date, Time, Datetime, Amount
+- Merchant
+    - Name, Category, Latitude, Longitude
+
+Relationship scehmas are as follows:
+- Used
+    - Source node:
+        - Person, key: ssn
+    - Target node:
+        - Credit Card, key: cc_num
+- Resides In
+    - Source node:
+        - Person, key: ssn
+    - Target node:
+        - Location, key: city
+- Sent
+    - Source node:
+        - Credit Card key: cc_num
+    - Target node:
+        - Transaction, key: trans_num
+- Received
+    - Source node:
+        - Transaction, key: trans_num
+    - Target node:
+        - Merchant, key: merchant
+        
+
+See the graphic for how the nodes and relationships relate:
+
+![DB Schema](db_schema.png)
+
+## Example Input and Output
+---
+### Input Source
+Sparkov generates flat, pipe-delimited csv files with one record per transaction and all related data joined to it. As an example see this transaction:
+
+`ssn|cc_num|first|last|gender|street|city|state|zip|lat|long|city_pop|job|dob|acct_num|profile|trans_num|trans_date|trans_time|unix_time|category|amt|is_fraud|merchant|merch_lat|merch_long
+225-82-3116|3521047095214560|Christopher|Anderson|M|842 Sloan Orchard Suite 517|Rockford|IL|61102|42.2547|-89.1247|189162|Call centre manager|1980-12-27|829533234908|adults_2550_male_urban.json|92c5e06f2f70b2e12c631711ba640686|2024-01-05|02:11:21|1704438681|grocery_net|72.28|0|Tromp, Kerluke and Glover|42.487952|-89.695647`
+
+### Example Output
+In the graph database this input transaction is converted to this graphical representation:
+![transaction](sample_transaction.png)
+
+Demonstrating more sophisticated fraud queries here's an example looking for transactions of amounts over $200 which occured within 7 days of each other from the same credit card?
+
+`match (c:CreditCard)-[s:SENT]-(t1:Transaction), (c)-[:SENT]-(t2:Transaction)
+where t1.amt > 200 and t2.amt > 200 and t2.trans_date - duration('P7D')<= t1.trans_date <= t2.trans_date + duration('P7D')
+return t1, t2
+order by t1.trans_date`
+![multiple credit cards](multiple_cards.png)
+
+
+## Project Diagram
+---
+```mermaid
+sequenceDiagram
+   participant User
+   participant Cypher Queries
+   participant Data Generation
+   participant Spark Script
+   participant Neo4j Database
+   User->>Spark Script: Initialize Spark Streams
+   Data Generation->>Spark Script: Read source files
+   Spark Script->>Neo4j Database: Transform and write transactions
+   Data Generation->>Data Generation: Continue generating batch transactions
+   User->>Cypher Queries: Execute queries on Neo4j
+   Cypher Queries->>Neo4j Database: Execute queries
+   Neo4j Database-->>Cypher Queries: Return results
+   Cypher Queries-->>User: Pass results
+```
+
+## Project Recording:
+The recording is too large to upload to git so please watch here: [Recording](https://drive.google.com/file/d/1wAz-R-HBITVRbsVKRaiStuKkC2u45piv/view?usp=sharing)

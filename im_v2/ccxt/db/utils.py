@@ -8,6 +8,7 @@ import im_v2.ccxt.db.utils as imvccdbut
 
 import logging
 
+import ccxt
 import pandas as pd
 
 import helpers.hsql as hsql

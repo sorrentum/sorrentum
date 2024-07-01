@@ -1,0 +1,24 @@
+version: '3'
+
+services:
+  jupyterlab:
+    build:
+      context: .
+    ports:
+      - "8888:8888"
+      # Mount jupyter notebook and data directory.
+    volumes:
+      - ./notebooks:/home/jovyan/work/scripts
+      - ./Data:/home/jovyan/work/data
+    user: root
+
+  neo4j:
+    image: neo4j:4.2.3
+    # Expose neo4j HTTP port and bolt port.
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      - NEO4J_AUTH=neo4j/password
+
+  

@@ -31,6 +31,7 @@ import pandas as pd
 
 import core.config as cconfig
 import dataflow_amp.system.Cx as dtfamsysc
+import helpers.hdatetime as hdateti
 import helpers.hdbg as hdbg
 import helpers.henv as henv
 import helpers.hpandas as hpandas
@@ -175,37 +176,17 @@ if config is None:
     system_config_dir = system_log_dir.rstrip("/process_forecasts")
     system_config_path = os.path.join(system_config_dir, config_file_name)
     system_config = cconfig.load_config_from_pickle(system_config_path)
-    # TODO(Dan): Deprecate after switch to updated config logs CmTask6627.
-    hdbg.dassert_in("dag_runner_config", system_config)
-    if isinstance(system_config["dag_runner_config"], tuple):
-        bar_duration = rsiprrec.extract_bar_duration_from_pkl_config(
-            system_config_dir
-        )
-        universe_version = rsiprrec.extract_universe_version_from_pkl_config(
-            system_config_dir
-        )
-        table_name = rsiprrec.extract_table_name_from_pkl_config(
-            system_config_dir
-        )
-        price_column_name = rsiprrec.extract_price_column_name_from_pkl_config(
-            system_config_dir
-        )
-    else:
-        hdbg.dassert_isinstance(system_config, cconfig.Config)
-        universe_version = system_config["market_data_config"]["universe_version"]
-        bar_duration_in_secs = system_config["dag_runner_config"][
-            "bar_duration_in_secs"
-        ]
-        bar_duration_in_mins = int(int(bar_duration_in_secs) / 60)
-        bar_duration = f"{bar_duration_in_mins}T"
-        table_name = system_config["market_data_config"]["im_client_config"][
-            "table_name"
-        ]
-        price_column_name = system_config["portfolio_config"][
-            "mark_to_market_col"
-        ]
+    # Get param values from SystemConfig.
+    bar_duration_in_secs = rsiprrec.get_bar_duration_from_config(system_config)
+    bar_duration = hdateti.convert_seconds_to_pandas_minutes(bar_duration_in_secs)
+    universe_version = system_config["market_data_config", "universe_version"]
+    price_column_name = system_config["portfolio_config", "mark_to_market_col"]
+    table_name = system_config[
+        "market_data_config", "im_client_config", "table_name"
+    ]
     vendor = "CCXT"
     mode = "trade"
+    #
     config_dict = {
         "id_col": id_col,
         "system_log_dir": system_log_dir,

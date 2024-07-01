@@ -114,7 +114,9 @@ def integrate_create_branch(ctx, dir_basename, dry_run=False):  # type: ignore
 
 
 def _resolve_src_dst_names(
-    src_dir_basename: str, dst_dir_basename: str, subdir: str,
+    src_dir_basename: str,
+    dst_dir_basename: str,
+    subdir: str,
     *,
     check_exists: bool = True,
 ) -> Tuple[str, str]:
@@ -192,8 +194,7 @@ def integrate_diff_dirs(  # type: ignore
     # skip the check for existence.
     check_exists = False
     abs_src_dir, abs_dst_dir = _resolve_src_dst_names(
-        src_dir_basename, dst_dir_basename, subdir,
-        check_exists=check_exists
+        src_dir_basename, dst_dir_basename, subdir, check_exists=check_exists
     )
     hio.create_dir(abs_dst_dir, incremental=True)
     if check_branches:
@@ -273,6 +274,7 @@ def integrate_diff_dirs(  # type: ignore
 # for file in im_v2/ccxt/data/extract/test/test_ccxt_extractor.py im_v2/common/data/transform/convert_pq_to_csv.py im_v2/im_lib_tasks.py im_v2/test/test_im_lib_tasks.py; do
 #   vimdiff ~/src/cmamp1/$file ~/src/kaizenflow1/$file
 # done
+
 
 def _find_files_touched_since_last_integration(
     abs_dir: str, subdir: str
@@ -376,10 +378,10 @@ def _integrate_files(
     """
     Build a list of files to compare based on the pattern.
 
-    :param files: relative path of the files to compare
-    :param abs_left_dir, abs_right_dir: path of the left / right dir
-    :param only_different_files: include in the script only the files that are
-        different
+    :param files: relative path of the files to compare :param
+        abs_left_dir, abs_right_dir: path of the left / right dir
+    :param only_different_files: include in the script only the files
+        that are different
     :return: list of files to compare
     """
     _LOG.debug(hprint.to_str("abs_left_dir abs_right_dir only_different_files"))
@@ -592,8 +594,7 @@ def integrate_diff_overlapping_files(  # type: ignore
     # skip the check for existence.
     check_exists = False
     src_dir_basename, dst_dir_basename = _resolve_src_dst_names(
-        src_dir_basename, dst_dir_basename, subdir,
-        check_exists=check_exists
+        src_dir_basename, dst_dir_basename, subdir, check_exists=check_exists
     )
     _dassert_is_integration_branch(src_dir_basename)
     _dassert_is_integration_branch(dst_dir_basename)
@@ -676,14 +677,14 @@ def _infer_dst_file_path(
     if idx >= 0:
         src_dir_basename = default_dst_dir_basename
         dst_dir_basename = default_src_dir_basename
-        subdir =src_file_path[idx + len(target_dir):]
+        subdir = src_file_path[idx + len(target_dir) :]
     else:
         target_dir = f"/{default_src_dir_basename}/"
         idx = src_file_path.find(target_dir)
         if idx >= 0:
             src_dir_basename = default_src_dir_basename
             dst_dir_basename = default_dst_dir_basename
-            subdir =src_file_path[idx + len(target_dir):]
+            subdir = src_file_path[idx + len(target_dir) :]
         else:
             raise ValueError(
                 f"Can't find either '{default_src_dir_basename}' or "
@@ -691,7 +692,9 @@ def _infer_dst_file_path(
                 f"'{src_file_path}'"
             )
     # Replace src dir (e.g., `cmamp1`) with dst dir (e.g., `amp1`).
-    dst_file_path = src_file_path.replace(f"/{src_dir_basename}/", f"/{dst_dir_basename}/")
+    dst_file_path = src_file_path.replace(
+        f"/{src_dir_basename}/", f"/{dst_dir_basename}/"
+    )
     _LOG.debug(hprint.to_str("dst_file_path subdir"))
     if check_exists:
         hdbg.dassert_path_exists(dst_file_path)
@@ -700,10 +703,13 @@ def _infer_dst_file_path(
 
 @task
 def integrate_rsync(  # type: ignore
-    ctx, src_dir,
+    ctx,
+    src_dir,
     src_dir_basename=DEFAULT_SRC_DIR_BASENAME,
     dst_dir_basename=DEFAULT_DST_DIR_BASENAME,
-    dst_dir="", check_dir=True, dry_run=False
+    dst_dir="",
+    check_dir=True,
+    dry_run=False,
 ):
     """
     Use `rsync` to bring two dirs to sync.
@@ -737,7 +743,8 @@ def integrate_rsync(  # type: ignore
         dst_dir, _ = _infer_dst_file_path(
             src_dir,
             default_src_dir_basename=src_dir_basename,
-            default_dst_dir_basename=dst_dir_basename)
+            default_dst_dir_basename=dst_dir_basename,
+        )
     if check_dir:
         _dassert_is_integration_branch(dst_dir)
     dst_dir = os.path.normpath(dst_dir)
@@ -751,10 +758,11 @@ def integrate_rsync(  # type: ignore
 
 @task
 def integrate_file(  # type: ignore
-    ctx, file_name,
+    ctx,
+    file_name,
     src_dir_basename=DEFAULT_SRC_DIR_BASENAME,
     dst_dir_basename=DEFAULT_DST_DIR_BASENAME,
-    dry_run=False
+    dry_run=False,
 ):
     """
     Diff corresponding files in two different repos.
@@ -792,7 +800,8 @@ def integrate_file(  # type: ignore
     dst_file_name, _ = _infer_dst_file_path(
         file_name,
         default_src_dir_basename=src_dir_basename,
-        default_dst_dir_basename=dst_dir_basename)
+        default_dst_dir_basename=dst_dir_basename,
+    )
     _LOG.info(hprint.to_str("file_name dst_file_name"))
     #
     _LOG.info("Syncing:\n'%s'\nto\n'%s'", file_name, dst_file_name)

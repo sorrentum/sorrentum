@@ -7,12 +7,13 @@ This assumes that the underlying data is sampled at a 1 second resolution.
 
 # Usage sample:
 > im_v2/common/data/transform/resample_daily_bid_ask_data.py \
-    --start_timestamp '20220916-000000' \
-    --end_timestamp '20220920-000000' \
-    --src_signature 'periodic_daily.airflow.downloaded_1sec.csv.bid_ask.futures.v3.crypto_chassis.binance.v1_0_0' \
+    --start_timestamp '20230101-000000' \
+    --end_timestamp '20230102-000000' \
+    --src_signature 'periodic_daily.airflow.downloaded_1sec.parquet.bid_ask.futures.v3.crypto_chassis.binance.v1_0_0' \
     --src_s3_path 's3://cryptokaizen-data-test/' \
     --dst_signature 'periodic_daily.airflow.resampled_1min.parquet.bid_ask.futures.v3.crypto_chassis.binance.v1_0_0' \
-    --dst_s3_path 's3://cryptokaizen-data-test/'
+    --dst_s3_path 's3://cryptokaizen-data-test/' \
+    --universe_part 3 1
 
 Import as:
 
@@ -152,6 +153,10 @@ def _run(args: argparse.Namespace, aws_profile: hs3.AwsProfile = "ck") -> None:
     data = _preprocess_src_data(scr_signature_args["action_tag"], data)
     data_resampled = []
     input_currency_pairs = data["currency_pair"].unique()
+    if args.universe_part:
+        input_currency_pairs = imvcdeexut._split_universe(
+            input_currency_pairs, args.universe_part[0], args.universe_part[1]
+        )
     for currency_pair in input_currency_pairs:
         data_single = data[data["currency_pair"] == currency_pair]
         if data_single.empty:
@@ -284,6 +289,16 @@ def _parse() -> argparse.ArgumentParser:
         required=False,
         type=int,
         help='Filter data to get top "n" levels of bid-ask data.',
+    )
+    parser.add_argument(
+        "--universe_part",
+        action="store",
+        required=False,
+        type=int,
+        nargs=2,
+        help="Pass two int argument x,y. Split universe into N chunks each contains X symbols. \
+            groups of 10 pairs, 'y' denotes which part should be downloaded \
+            (e.g. 10, 1 - download first 10 symbols)",
     )
     parser = hparser.add_verbosity_arg(parser)
     return parser

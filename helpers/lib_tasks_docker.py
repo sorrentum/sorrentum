@@ -335,7 +335,7 @@ def docker_login(ctx, target_registry="aws_ecr.ck"):  # type: ignore
     Log in the target registry and skip if we are in kaizenflow.
 
     :param target_registry: target Docker image registry to log in to
-        - "dockerhub.sorrentum": public kaizenflow Docker image registry
+        - "dockerhub.sorrentum": public Kaizenflow Docker image registry
         - "aws_ecr.ck": private AWS CK ECR
     """
     # No login required as kaizenflow container is accessible on the public

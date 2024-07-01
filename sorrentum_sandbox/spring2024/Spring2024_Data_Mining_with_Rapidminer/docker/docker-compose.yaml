@@ -1,0 +1,9 @@
+version: '3'
+services:
+  server:
+    build: src
+    image: server:latest
+    volumes:
+      - ./input:/input
+      - ./output:/output
+

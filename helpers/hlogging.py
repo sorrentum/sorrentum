@@ -225,7 +225,7 @@ class _LocalTimeZoneFormatter:
 
             self._tzinfo = pytz.timezone("America/New_York")
         except ModuleNotFoundError as e:
-            print(f"Can't import pytz: using UTC\n{str(e)}")
+            #print(f"Can't import pytz: using UTC\n{str(e)}")
             self._tzinfo = None
 
     def converter(self, timestamp: float) -> datetime.datetime:
@@ -556,7 +556,7 @@ class CustomFormatter(logging.Formatter):
 
             self._tzinfo = pytz.timezone("America/New_York")
         except ModuleNotFoundError as e:
-            print(f"Can't import pytz: using UTC\n{str(e)}")
+            #print(f"Can't import pytz: using UTC\n{str(e)}")
             self._tzinfo = None
         #
         self._report_memory_usage = report_memory_usage

@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  jupyter:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: jupyter_notebook
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./:/home/jovyan/work
+    environment:
+      - JUPYTER_TOKEN=Avro

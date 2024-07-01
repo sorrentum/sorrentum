@@ -305,8 +305,8 @@ def parse_input_output_args(
     if in_file_name != "-":
         if clear_screen:
             os.system("clear")
-        print(f"in_file_name='{in_file_name}'")
-        print(f"out_file_name='{out_file_name}'")
+        _LOG.info(f"in_file_name='{in_file_name}'")
+        _LOG.info(f"out_file_name='{out_file_name}'")
     return in_file_name, out_file_name
 
 
@@ -337,8 +337,10 @@ def write_file(txt: Union[str, List[str]], file_name: str) -> None:
     if isinstance(txt, str):
         txt = [txt]
     if file_name == "-":
+        _LOG.debug("Saving to stdout")
         print("\n".join(txt))
     else:
+        _LOG.debug("Saving to file")
         with open(file_name, "w") as f:
             f.write("\n".join(txt))
         _LOG.info("Written file '%s'", file_name)

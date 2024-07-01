@@ -273,7 +273,7 @@ def lint(  # type: ignore
         configures the environment) and then `bash`, instead of running the
         lint command
     :param run_bash_without_entrypoint: run bash, skipping the entrypoint
-    TODO(gp): This seems to work but have some problems with tty
+        TODO(gp): This seems to work but have some problems with tty
     :param stage: the image stage to use
     :param out_file_name: name of the file to save the log output in
     """
@@ -348,7 +348,6 @@ def lint(  # type: ignore
                 "amp_mypy",
             ]
         )
-
     if run_linter_step:
         # We don't want to run this all the times.
         # docker_pull(ctx, stage=stage, images="dev_tools")

@@ -196,7 +196,7 @@ market_data = mdata.get_HistoricalImClientMarketData_example1(
 
 # %%
 # Load OHLCV data.
-ohlcv_data = dtfamsysc.load_ohlcv_data(
+ohlcv_data = dtfamsysc.load_market_data(
     market_data,
     config["ohlcv_data"]["start_timestamp"],
     config["ohlcv_data"]["end_timestamp"],
@@ -319,13 +319,6 @@ half_spread_df = bid_ask_data.pivot(
     columns=full_symbol_col, values=half_spread_col
 )
 half_spread_bps_df = 1e4 * half_spread_df / bid_ask_midpoint_df
-hpandas.df_to_str(half_spread_bps_df, log_level=logging.INFO)
-
-# %%
-# TODO(Dan): since this is pretty common, factor out in a lib or even create a DagBuilder objects to do that.
-bid_ask_midpoint_df = 0.5 * (ask_price_df + bid_price_df)
-half_spread_df = 0.5 * (ask_price_df - bid_price_df) / bid_ask_midpoint_df
-half_spread_bps_df = 1e4 * half_spread_df
 hpandas.df_to_str(half_spread_bps_df, log_level=logging.INFO)
 
 # %% run_control={"marked": false}

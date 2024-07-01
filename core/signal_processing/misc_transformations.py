@@ -193,6 +193,7 @@ def skip_apply_func(
     return df
 
 
+# TODO(Paul): Add test coverage.
 def sign_normalize(
     signal: Union[pd.DataFrame, pd.Series],
     atol: float = 0,

@@ -27,6 +27,9 @@ _LOG = logging.getLogger(__name__)
 # side.
 nest_asyncio.apply()
 
+# TODO(Grisha): propagate via SystemConfig.
+# Minimum number of seconds required for wave completion.
+_WAVE_COMPLETION_TIME_THRESHOLD = 4
 
 # #############################################################################
 # CcxtBroker
@@ -215,6 +218,16 @@ class CcxtBroker(obcaccbr.AbstractCcxtBroker):
             parent_order_ids_to_child_order_shares = (
                 quantity_computer.get_wave_quantities(wave_id)
             )
+            # TODO(Grisha): should we apply the same rule to the other waves?
+            # We want to skip the first wave if the time left to complete
+            # the wave is less than the threshold.
+            if await self._skip_first_wave(
+                execution_start_timestamp,
+                execution_freq,
+                wave_start_time,
+                wave_id,
+            ):
+                continue
             child_orders_iter = await self._submit_twap_child_orders(
                 parent_orders_copy,
                 parent_order_ids_to_child_order_shares,
@@ -268,7 +281,15 @@ class CcxtBroker(obcaccbr.AbstractCcxtBroker):
         # TODO(Danya): Factor out the loading and logging of oms.Fills
         #  into a separate method.
         oms_fills = await self.get_fills_async()
+        _LOG.info(
+            "get_fills_async() is done, current time is %s",
+            self.market_data.get_wall_clock_time(),
+        )
         self._logger.log_oms_fills(self._get_wall_clock_time, oms_fills)
+        _LOG.info(
+            "log_oms_fills() is done, current time is %s",
+            self.market_data.get_wall_clock_time(),
+        )
         # The receipt is not really needed since the order is accepted right away,
         # and we don't need to wait for the order being accepted.
         submitted_order_id = self._get_next_submitted_order_id()
@@ -343,7 +364,10 @@ class CcxtBroker(obcaccbr.AbstractCcxtBroker):
         # From the system POV it's important that the bar ends before the
         # next one starts, AKA doesn't leak to the next bar. To facilitate
         # that, we cancer earlier for in the last wave.
-        early_cancel_delay = 2 if is_last_wave else 0.2
+        # TODO(Grisha): pass values via SystemConfig.
+        # TODO(Grisha): should this be a function of `execution_frequency`?
+        # Currently we assume `10S` execution window.
+        early_cancel_delay = 5 if is_last_wave else 0.2
         wait_until_modified = wait_until - pd.Timedelta(
             seconds=early_cancel_delay
         )
@@ -655,3 +679,50 @@ class CcxtBroker(obcaccbr.AbstractCcxtBroker):
                 id=str(ccxt_id), symbol=symbol
             )
         return ccxt_order
+
+    async def _skip_first_wave(
+        self,
+        execution_start_timestamp: pd.Timestamp,
+        execution_freq: pd.Timedelta,
+        wave_start_time: pd.Timestamp,
+        wave_id: int,
+    ) -> bool:
+        """
+        Skip the first wave if the time left to complete the wave is less than
+        the threshold.
+
+        :param execution_start_timestamp: The timestamp when the
+            execution starts.
+        :param execution_freq: The frequency of execution.
+        :param wave_start_time: The timestamp when the wave starts.
+        :param wave_id: The ID of the wave.
+        :return: True if the first wave should be skipped, False
+            otherwise.
+        """
+        # Calculate the timestamp until which the wave should be completed.
+        wait_until = (execution_start_timestamp + execution_freq).floor(
+            execution_freq
+        )
+        # Check if it is the first wave and the time left to complete the
+        # wave is less than the threshold.
+        if (
+            wave_id == 0
+            and (wait_until - wave_start_time).total_seconds()
+            < _WAVE_COMPLETION_TIME_THRESHOLD
+        ):
+            _LOG.info(
+                hprint.to_str(
+                    "wait_until wave_start_time _WAVE_COMPLETION_TIME_THRESHOLD"
+                )
+            )
+            _LOG.warning("Skipping first wave, time left is less than threshold.")
+            await hasynci.async_wait_until(
+                wait_until,
+                self._get_wall_clock_time,
+            )
+            _LOG.info(
+                "After syncing with next child wave=%s",
+                self.market_data.get_wall_clock_time(),
+            )
+            return True
+        return False

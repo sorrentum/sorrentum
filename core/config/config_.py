@@ -37,6 +37,11 @@ _LOG.setLevel(logging.INFO)
 # _LOG.debug = lambda *_: 0
 
 
+# Set config version.
+# See `docs/kaizenflow/ck.system_config.explanation.md` for detailed info.
+CONFIG_VERSION = "v3"
+
+
 # Placeholder value used in configs, when configs are built in multiple phases.
 DUMMY = "__DUMMY__"
 
@@ -996,6 +1001,9 @@ class Config:
 
         :param tag: basename of the files to save (e.g., "system_config.input")
         """
+        # 0) Save txt file with config version.
+        file_name = os.path.join(log_dir, "config_version.txt")
+        hio.to_file(file_name, CONFIG_VERSION)
         # 1) As a string.
         file_name = os.path.join(log_dir, f"{tag}.txt")
         hio.to_file(file_name, repr(self))

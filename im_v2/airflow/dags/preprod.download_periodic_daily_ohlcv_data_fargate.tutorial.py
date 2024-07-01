@@ -1,3 +1,9 @@
+"""
+Import as:
+
+import im_v2.airflow.dags.preprod.download_periodic_daily_ohlcv_data_fargate.tutorial as imvadpdpdodft
+"""
+
 # This is a tutorial DAG to demonstrate extract part of the DataPull flow.
 
 import copy
@@ -19,9 +25,9 @@ _STAGE = aiutmisc.get_stage_from_filename(_FILENAME)
 
 # Used for seperations of deployment environments.
 # Ignored when executing on prod/preprod.
-_USERNAME = "replace-with-your-username"
+_ISSUE_ID = "replace-with-your-issue-id"
 
-_ECS_TASK_DEFINITION = aiutecop.get_task_definition(_STAGE, False, _USERNAME)
+_ECS_TASK_DEFINITION = aiutecop.get_task_definition(_STAGE, False, _ISSUE_ID)
 
 # Deployment type, determines whether a task should be run via AWS Fargate (serverless execution)
 # or EC2 (machines deployed in our auto-scaling group).
@@ -94,7 +100,6 @@ end_download = DummyOperator(task_id="end_download", dag=dag)
 end_dag = DummyOperator(task_id="end_dag", dag=dag)
 
 for vendor, exchange, contract, data_type, universe in _JOBS:
-
     # TODO(Juraj): Make this code more readable.
     # Do a deepcopy of the bash command list so we can reformat params on each iteration.
     curr_bash_command = copy.deepcopy(download_command)

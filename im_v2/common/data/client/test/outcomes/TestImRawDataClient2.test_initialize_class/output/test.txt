@@ -46,6 +46,7 @@
                     'token_separator_character': '.',
                     'version': 'v3'},
  'db_connection': <connection object at 0x; dsn: 'user=aljsdalsd password=xxx dbname=im_postgres_db_local host=xxx port=xxx', closed: 0>,
+ 's3_bucket_name': '$CK_AWS_S3_BUCKET',
  'signature': 'realtime.airflow.downloaded_200ms.postgres.bid_ask.futures.v7.ccxt.binance.v1_0_0',
  'stage': 'prod',
  'table_name': 'ccxt_bid_ask_futures_raw',
