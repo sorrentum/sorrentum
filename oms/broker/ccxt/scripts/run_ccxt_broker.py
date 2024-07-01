@@ -53,8 +53,6 @@ _LOG = logging.getLogger(__name__)
 _BINANCE_MIN_NOTIONAL = 10
 _VENDOR = "ccxt"
 _EXCHANGE = "binance"
-# TODO(Juraj): a hacky way to make progress, implement this as one of the run modes.
-_NEXT_ORDER_SIDE_PER_ASSET = {}
 
 
 def _get_symbols(
@@ -81,9 +79,6 @@ def _get_symbols(
         )
         for symbol in universe[exchange]
     ]
-    # TODO(Juraj): Remove global var #CmTask7601.
-    global _NEXT_ORDER_SIDE_PER_ASSET
-    _NEXT_ORDER_SIDE_PER_ASSET = {symbol: None for symbol in symbols}
     return symbols
 
 
@@ -166,13 +161,11 @@ def _get_random_order(
         num_shares = current_position * -1
     else:
         num_shares = np.random.uniform(min_order_size, max_order_size)
-        _NEXT_ORDER_SIDE_PER_ASSET[symbol] = "sell"
         # Set negative amount of shares when direction is sell, or direction should be random.
         if order_direction == "sell" or (
             order_direction is None and np.random.choice([True, False])
         ):
             num_shares = -num_shares
-            _NEXT_ORDER_SIDE_PER_ASSET[symbol] = "buy"
     _LOG.debug(hprint.to_str2(num_shares))
     # Timestamps.
     end_timestamp = start_timestamp + pd.Timedelta(
@@ -233,12 +226,6 @@ def _get_random_orders(
             continue
         # Set order direction for the current order.
         symbol = asset_id["symbol"]
-        _LOG.debug(_NEXT_ORDER_SIDE_PER_ASSET)
-        order_diretion = (
-            orders_direction
-            if orders_direction is not None
-            else _NEXT_ORDER_SIDE_PER_ASSET[symbol]
-        )
         order = _get_random_order(
             start_timestamp,
             asset_id["asset_id"],
