@@ -8,6 +8,9 @@ import oms.execution_analysis_configs as oexancon
 
 import logging
 import os
+from typing import List
+
+import pandas as pd
 
 import core.config as cconfig
 import helpers.hdatetime as hdateti
@@ -320,6 +323,56 @@ def get_master_trading_system_report_notebook_config(
     config_dict = {
         "timestamp_dir": timestamp_dir,
         "analysis_notebooks_file_path": analysis_notebooks_file_path,
+    }
+    config = cconfig.Config.from_dict(config_dict)
+    config_list = cconfig.ConfigList([config])
+    return config_list
+
+
+# #############################################################################
+# Master_system_run_debugger
+# #############################################################################
+
+
+def build_master_system_run_debugger_configs(
+    dst_root_dir: str,
+    dag_builder_name: str,
+    run_mode: str,
+    start_timestamp_as_str: str,
+    end_timestamp_as_str: str,
+    mode: str,
+    node_name: str,
+    bar_timestamp: str,
+    asset_id: int,
+    *,
+    columns: List[str] = ["close", "feature"],
+) -> cconfig.ConfigList:
+    """
+    Build config for `Master_system_run_debugger` notebook.
+
+    :param dst_root_dir: root directory for the destination
+    :param dag_builder_name: e.g., "C5b"
+    :param run_mode: e.g., "paper_trading"
+    :param start_timestamp_as_str: e.g., "20230713_131000"
+    :param end_timestamp_as_str: e.g., "20230714_130500"
+    :param mode: mode of the operation, e.g., "scheduled"
+    :param node_name: e.g., "predict.9.process_forecasts"
+    :param bar_timestamp: as pd.Timestamp-compatible string, e.g., "2023-07-13 10:20:00-04:00"
+    :param asset_id: e.g., 2484635488
+    :param columns: list of column names (e.g., ["close", "feature"])
+    :return: list of configs with a single resulting config
+    """
+    config_dict = {
+        "dst_root_dir": dst_root_dir,
+        "dag_builder_name": dag_builder_name,
+        "run_mode": run_mode,
+        "start_timestamp_as_str": start_timestamp_as_str,
+        "end_timestamp_as_str": end_timestamp_as_str,
+        "mode": mode,
+        "node_name": node_name,
+        "bar_timestamp": pd.Timestamp(bar_timestamp),
+        "asset_id": asset_id,
+        "columns": columns,
     }
     config = cconfig.Config.from_dict(config_dict)
     config_list = cconfig.ConfigList([config])
