@@ -81,6 +81,22 @@ class TestStaticSchedulingChildOrderQuantityComputer(hunitest.TestCase):
             {1: 1.0, 2: 0.3, 3: 1.0},
         )
 
+    def test_get_range_filter(self) -> None:
+        """
+        Check that the correct range of expected child orders is returned.
+        """
+        # Set inputs.
+        bar_duration = "5T"
+        exec_freq = "2T"
+        # Test.
+        range_filter = self._get_range_filter(bar_duration, exec_freq)
+        actual = str(range_filter)
+        expected = r"""
+        [0, 2]
+        """
+        # Check outputs.
+        self.assert_equal(actual, expected, fuzzy_match=True)
+
     def _get_wave_quantities(
         self, num_waves: int, target_wave_id: int, diff_num_shares: List[float]
     ) -> Dict[int, float]:
@@ -89,7 +105,8 @@ class TestStaticSchedulingChildOrderQuantityComputer(hunitest.TestCase):
 
         :param num_waves: number of waves
         :param target_wave_id: id of the wave to test
-        :param diff_num_shares: list of number of shares for each parent order
+        :param diff_num_shares: list of number of shares for each parent
+            order
         """
         # Define parent orders with different number of shares.
         parent_orders = _get_parent_orders(diff_num_shares)
@@ -112,6 +129,27 @@ class TestStaticSchedulingChildOrderQuantityComputer(hunitest.TestCase):
                 wave_id,
             )
         return wave_quantities
+
+    def _get_range_filter(
+        self,
+        bar_duration: str,
+        exec_freq: str,
+    ) -> List[int]:
+        """
+        Get the range of expected number of child orders.
+
+        :param bar_duration: bar duration
+        :param exec_freq: execution frequency
+        """
+        # Initializing the scheduler.
+        child_order_quantity_computer = (
+            ocoqcsscoqc.StaticSchedulingChildOrderQuantityComputer()
+        )
+        # Call the function to get the range of filter.
+        range_filter = child_order_quantity_computer.get_range_filter(
+            bar_duration, exec_freq
+        )
+        return range_filter
 
 
 class TestDynamicSchedulingChildOrderQuantityComputer(hunitest.TestCase):
@@ -194,6 +232,22 @@ class TestDynamicSchedulingChildOrderQuantityComputer(hunitest.TestCase):
             {1: 4.0, 2: 1.0, 3: 3.0},
         )
 
+    def test_get_range_filter(self) -> None:
+        """
+        Check that the correct range of expected child orders is returned.
+        """
+        # Set inputs.
+        bar_duration = "5T"
+        exec_freq = "2T"
+        # Test.
+        range_filter = self._get_range_filter(bar_duration, exec_freq)
+        actual = str(range_filter)
+        expected = r"""
+        [0, 1, 2]
+        """
+        # Check outputs.
+        self.assert_equal(actual, expected, fuzzy_match=True)
+
     def _get_wave_quantities(
         self,
         num_waves: int,
@@ -206,7 +260,8 @@ class TestDynamicSchedulingChildOrderQuantityComputer(hunitest.TestCase):
 
         :param num_waves: number of waves
         :param wave_id: id of the wave to test
-        :param diff_num_shares: list of number of shares for each parent order
+        :param diff_num_shares: list of number of shares for each parent
+            order
         :param open_positions: dict of open positions
         """
         # Define parent orders with different number of shares.
@@ -232,13 +287,35 @@ class TestDynamicSchedulingChildOrderQuantityComputer(hunitest.TestCase):
             )
         return wave_quantities
 
+    def _get_range_filter(
+        self,
+        bar_duration: str,
+        exec_freq: str,
+    ) -> List[int]:
+        """
+        Get the range of expected number of child orders.
+
+        :param bar_duration: bar duration
+        :param exec_freq: execution frequency
+        """
+        # Initializing the scheduler.
+        child_order_quantity_computer = (
+            ocoqcdscoqc.DynamicSchedulingChildOrderQuantityComputer()
+        )
+        # Call the function to get the range of filter.
+        range_filter = child_order_quantity_computer.get_range_filter(
+            bar_duration, exec_freq
+        )
+        return range_filter
+
 
 def _get_parent_orders(diff_num_shares: List[int]) -> List[oordorde.Order]:
     """
     Generate parent orders.
 
-    :param diff_num_shares: list of number of shares for each parent order, e.g.
-        `[1, 2, 3]` for 3 parent orders, 1 share for the first, 2 for the second, 3 for the third.
+    :param diff_num_shares: list of number of shares for each parent
+        order, e.g. `[1, 2, 3]` for 3 parent orders, 1 share for the
+        first, 2 for the second, 3 for the third.
     """
     # Create a parent order with 2 assets and 2 waves.
     creation_timestamp = pd.Timestamp("2022-08-05 09:30:55+00:00")
